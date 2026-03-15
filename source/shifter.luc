@@ -1,0 +1,36 @@
+module shifter (
+    input a[32],
+    input b[5],
+    input alufn[6],
+    output shift[32]
+) {
+    x_bit_left_shifter shifter[5](
+        #SHIFT({8d16, 8d8, 8d4, 8d2, 8d1})
+    )
+    reverse r_in
+    reverse r_out
+    sig pad
+    always {
+        r_in.in = a
+        pad = 0
+        if (&alufn[1:0]) {
+            pad = a[-1]
+        }
+        shifter.pad = 5x{pad}
+        shifter.a[4] = a
+        if (alufn[0]) {
+            shifter.a[4] = r_in.out
+        }
+        shifter.do_shift[4] = b[4]
+        
+        repeat(i, 4) {
+            shifter.a[i] = shifter.out[i+1]
+            shifter.do_shift[i] = b[i]
+        }
+        shift = shifter.out[0]
+        r_out.in = shifter.out[0]
+        if (alufn[0]) {
+            shift = r_out.out
+        }
+    }
+}

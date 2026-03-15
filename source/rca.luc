@@ -1,0 +1,19 @@
+module rca #(SIZE=32 : SIZE > 1)(
+    input a[SIZE],
+    input b[SIZE],
+    input cin,
+    output s[SIZE],
+    output cout
+) {
+    fa adder[SIZE](.a(a), .b(b))
+    always {
+        s = 0
+        cout = 0
+        adder.cin[0] = cin
+        repeat(i, SIZE - 1) {
+            adder.cin[i + 1] = adder.cout[i]
+        }
+        cout = adder.cout[SIZE - 1]
+        s = adder.s
+    }
+}

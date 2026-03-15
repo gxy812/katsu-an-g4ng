@@ -1,0 +1,9 @@
+module mux2 (
+    input s0,
+    input in[2],
+    output out
+) {
+    always {
+        out = in[s0]
+    }
+}

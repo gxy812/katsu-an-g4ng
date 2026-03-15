@@ -1,0 +1,14 @@
+module boolean (
+    input a[32],
+    input b[32],
+    input alufn[6],
+    output bool[32]
+) {
+    mux4to1 mux_4_32[32]
+    always {
+        mux_4_32.data = 32x{{alufn[3:0]}}
+        mux_4_32.s0 = a
+        mux_4_32.s1 = b
+        bool = mux_4_32.y
+    }
+}

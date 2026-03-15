@@ -1,0 +1,46 @@
+module alu (
+    input alufn[6],
+    input a[32],
+    input b[32],
+    output out[32],
+    output z,
+    output v,
+    output n
+) {
+    .a(a), .b(b) {
+        adder adder(#SIZE(32), .alufn0(alufn))
+        multiplier mul
+        .alufn(alufn) {
+            boolean bool
+            shifter shift
+        }
+    }
+    compare cmp(.alufn(alufn))
+    sig addmul[32]
+    always {
+        if (alufn[1]) {
+            addmul = mul.mul
+        }
+        else {
+            addmul = adder.s
+        }
+        z = adder.z
+        v = adder.v
+        n = adder.n
+        cmp.z = adder.z
+        cmp.v = adder.v
+        cmp.n = adder.n
+        case (alufn[5:4]) {
+            0:
+                out = addmul
+            1:
+                out = bool.bool
+            2:
+                out = shift.shift
+            3:
+                out = c{31b0, cmp.cmp}
+            default:
+                out = 0
+        }
+    }
+}

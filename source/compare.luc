@@ -1,0 +1,18 @@
+module compare (
+    input z,    // ZVN wait for adder unit
+    input v,
+    input n,
+    input alufn[6],
+    output cmp
+) { 
+    mux4to1 mux
+    always {
+        mux.data[0] = 0
+        mux.data[1] = z
+        mux.data[2] = n^v
+        mux.data[3] = (n^v) + z
+        mux.s0 = alufn[1]
+        mux.s1 = alufn[2]
+        cmp = mux.y
+    }
+}

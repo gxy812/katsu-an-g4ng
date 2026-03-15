@@ -1,0 +1,21 @@
+module adder #(
+    SIZE ~ 32 : SIZE > 1
+)(
+    input a[SIZE],
+    input b[SIZE],
+    input alufn0,
+    output s[SIZE],
+    output z,
+    output v,
+    output n
+) {
+    sig xb[SIZE]
+    rca rca(#SIZE(SIZE), .a(a), .b(xb), .cin(alufn0))
+    always {
+        xb = b ^ SIZEx{alufn0}
+        s = rca.s
+        z = ~| rca.s
+        v = ( a[SIZE-1] & xb[SIZE-1] & ~rca.s[SIZE-1] ) | ( ~a[SIZE-1] & ~xb[SIZE-1] & rca.s[SIZE-1] )
+        n = rca.s[SIZE-1]
+    }
+}

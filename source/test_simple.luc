@@ -1,0 +1,24 @@
+testbench test_simple {
+    mux4to1 mux
+    
+    const NUM_TESTS = 4
+    const TEST_CASES = {
+        c{4h3, 2b00},
+        c{4h4, 2b00},
+        c{4h5, 2b10},
+        c{4h6, 2b10}
+    }
+    const EXPECTED = {
+        1, 0, 1, 1
+    }
+
+    test myTest {
+        repeat(i, NUM_TESTS) {
+            mux.data = TEST_CASES[i][-1:2]
+            mux.s0 = TEST_CASES[i][0]
+            mux.s1 = TEST_CASES[i][1]
+            $tick()
+            $assert(mux.y == EXPECTED[i])
+        }
+    }
+}

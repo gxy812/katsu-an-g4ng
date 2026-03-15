@@ -1,0 +1,10 @@
+module mux4to1 (
+    input data[4],
+    input s0,
+    input s1,
+    output y
+) {
+    always {
+        y = data[c{s1, s0}]
+    }
+}

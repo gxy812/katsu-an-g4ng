@@ -1,0 +1,12 @@
+module reverse #(
+    SIZE = 32: SIZE > 0
+)(
+    input in[SIZE],
+    output out[SIZE]
+) {
+    always {
+        repeat(i, 32) {
+            out[i] = in[31-i]
+        }
+    }
+}

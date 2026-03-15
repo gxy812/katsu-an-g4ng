@@ -1,0 +1,22 @@
+module x_bit_left_shifter #(
+    SHIFT = 8 : SHIFT > -1 & SHIFT < 32,
+    SIZE = 32 : SIZE > 0
+)(
+    input a[SIZE],
+    input do_shift,
+    input pad,
+    output out[SIZE]
+) {
+    mux2 shift_unit[SIZE]
+    sig in_lshift_unit[SIZE]
+    
+    always {
+        shift_unit.s0 = SIZEx{do_shift}
+        in_lshift_unit = c{a[SIZE-1-SHIFT:0], SHIFTx{pad}}
+        
+        repeat(i, SIZE) {
+            shift_unit.in[i] = c{in_lshift_unit[i], a[i]}
+        }
+        out = shift_unit.out
+    }
+}

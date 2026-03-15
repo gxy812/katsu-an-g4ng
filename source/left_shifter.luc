@@ -1,0 +1,21 @@
+module left_shifter (
+    input a[32],
+    input b[5],
+    input pad,
+    output shl[32]
+) {
+    x_bit_left_shifter shifter[5](
+        #SHIFT({5d16, 5d8, 5d4, 5d2, 5d1})
+    )
+    always {
+        shifter.pad = pad
+        shifter.a[4] = a
+        shifter.do_shift[4] = b[4]
+        
+        repeat(i, 4, 3, -1) {
+            shifter.a[i] = shifter.out[a+1]
+            shifter.do_shift[i] = b[i]
+        }
+        shl = shifter.out[0]
+    }
+}
