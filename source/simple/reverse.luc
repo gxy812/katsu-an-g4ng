@@ -1,12 +1,12 @@
 module reverse #(
-    SIZE = 32: SIZE > 0
+    SIZE = 32: SIZE > 2
 )(
     input in[SIZE],
     output out[SIZE]
 ) {
     always {
-        repeat(i, 32) {
-            out[i] = in[31-i]
+        repeat(i, SIZE) {
+            out[i] = in[SIZE-1-i]
         }
     }
 }

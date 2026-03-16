@@ -13,10 +13,13 @@ module alu (
         .alufn(alufn) {
             boolean bool
             shifter shift
+            rotater rot
         }
     }
-    compare cmp(.alufn(alufn))
     sig addmul[32]
+    compare cmp(.alufn(alufn))
+    abs abs(.in(addmul))
+    reverse rev(.in(addmul))
     always {
         if (alufn[1]) {
             addmul = mul.mul
@@ -30,17 +33,25 @@ module alu (
         cmp.z = adder.z
         cmp.v = adder.v
         cmp.n = adder.n
+        out = 0
         case (alufn[5:4]) {
-            0:
+            b00:
                 out = addmul
-            1:
+            b01:
                 out = bool.bool
-            2:
-                out = shift.shift
-            3:
+            b10:
+                case (alufn[3:2]) {
+                    b00:
+                        out = shift.shift // SHL, SHR, SRA
+                    b01:
+                        out = rot.shift // ROL, ROR
+                    b10:
+                        out = rev.out // reverse add, sub, mul
+                    b11:
+                        out = abs.out // absolute add, sub, mul
+                }
+            b11:
                 out = c{31b0, cmp.cmp}
-            default:
-                out = 0
         }
     }
 }

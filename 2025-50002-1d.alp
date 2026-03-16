@@ -196,6 +196,18 @@
                     "type": "DiskFile",
                     "path": "source/fsm_eq.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/alu/rotater.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/alu/abs.luc"
+                }
             }
         ],
         "constraintFiles": [
