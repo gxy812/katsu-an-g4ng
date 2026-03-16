@@ -74,127 +74,127 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/fa.luc"
+                    "path": "source/simple/fa.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/rca.luc"
+                    "path": "source/simple/rca.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/fsm_eq.luc"
+                    "path": "source/simple/mux2.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/mux2.luc"
+                    "path": "source/simple/x_bit_left_shifter.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/x_bit_left_shifter.luc"
+                    "path": "source/simple/left_shifter.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/left_shifter.luc"
+                    "path": "source/simple/reverse.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/test_shifter.luc"
+                    "path": "source/simple/mux4to1.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/shifter.luc"
+                    "path": "source/simple/test_simple.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/reverse.luc"
+                    "path": "source/alu/test_shifter.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/adder.luc"
+                    "path": "source/alu/shifter.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/compare.luc"
+                    "path": "source/alu/adder.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/mux4to1.luc"
+                    "path": "source/alu/compare.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/test_simple.luc"
+                    "path": "source/alu/boolean.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/boolean.luc"
+                    "path": "source/alu/test_boolean.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/test_boolean.luc"
+                    "path": "source/alu/test_compare.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/test_compare.luc"
+                    "path": "source/alu/multiplier.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/multiplier.luc"
+                    "path": "source/alu/test_multiplier.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/test_multiplier.luc"
+                    "path": "source/alu/alu.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/test_alu.luc"
+                    "path": "source/alu/test_alu.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
                     "path": "source/fsm_manual.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/fsm_eq.luc"
                 }
             }
         ],
