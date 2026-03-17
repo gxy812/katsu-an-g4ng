@@ -23,12 +23,24 @@ testbench test_alu {
             
             c{32d5,          32d5,          6h33, c{32d1,          1b1,1b0,1b0}}, // 13 CMPEQ 5==5
             c{32d3,          32d7,          6h35, c{32d1,          1b0,1b0,1b1}}, // 14 CMPLT 3<7 true
-            c{32d5,          32d5,          6h37, c{32d1,          1b1,1b0,1b0}}  // 15 CMPLE 5<=5
+            c{32d5,          32d5,          6h37, c{32d1,          1b1,1b0,1b0}}, // 15 CMPLE 5<=5
+    
+            c{32h80000001,   32d4,          6h24, c{32h00000018,   1b0,1b0,1b1}}, // 16 ROL 1, 4
+            c{32d16,         32d1,          6h25, c{32d8,          1b0,1b0,1b0}}, // 17 ROR 16, 1
+            
+            c{32h7FFFFFFF,   32d1,          6h28, c{32h00000001,   1b0,1b1,1b1}}, // 18 REVADD overflow
+            c{32d7,          32d5,          6h29, c{32h40000000,   1b0,1b0,1b0}}, // 19 REVSUB 7-5
+            c{32d3,          32d4,          6h2A, c{32h30000000,   1b0,1b0,1b0}}, // 20 REVMUL 3*4
+            
+            c{32h7FFFFFFF,   32d1,          6h2C, c{32h80000000,   1b0,1b1,1b1}}, // 21 ABSADD overflow
+            c{32hFFFFFFFF,   32d3,          6h2D, c{32d4,          1b0,1b0,1b1}}, // 22 ABSSUB
+            c{32h00000000,   32d3,          6h2D, c{32d3,          1b0,1b0,1b1}}, // 23 ABSSUB
+            c{32d3,          32hFFFFFFFE,   6h2E, c{32d6,          1b0,1b0,1b0}}  // 24 ABSMUL 3*-2
         }
     )
     
     test aluTest {
-         repeat(i, 16){
+         repeat(i, 25){
             alu.a = TEST_VALUES_ALU[i][104:73]
             alu.b = TEST_VALUES_ALU[i][72:41]
             alu.alufn = TEST_VALUES_ALU[i][40:35]
