@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subway Surfers Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-neon: #39ff14;
+    --green-glow: #00cc00;
+    --amber: #ffaa00;
+    --amber-dark: #cc7700;
+    --amber-glow: rgba(255,170,0,0.6);
+    --blue-neon: #00cfff;
+    --bg-dark: #0a0a0f;
+    --bg-panel: #12121a;
+    --metal: #2a2a35;
+    --metal-light: #3a3a48;
+    --text-bright: #ffffff;
+    --red-death: #ff3322;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg-dark);
+    font-family: 'Russo One', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(0,100,50,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, rgba(0,80,120,0.08) 0%, transparent 60%);
+  }
+
+  /* ── MARQUEE ── */
+  .marquee {
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+    padding: 18px 0 8px;
+    position: relative;
+  }
+  .marquee h1 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(48px, 8vw, 90px);
+    letter-spacing: 4px;
+    background: linear-gradient(180deg, #ffe066 0%, #ff9900 40%, #ff4400 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 18px rgba(255,140,0,0.7)) drop-shadow(0 0 40px rgba(255,80,0,0.4));
+    line-height: 1;
+  }
+  .marquee-glow {
+    position: absolute;
+    bottom: 0; left: 10%; right: 10%;
+    height: 3px;
+    background: var(--green-neon);
+    box-shadow: 0 0 12px var(--green-neon), 0 0 30px var(--green-neon);
+    border-radius: 2px;
+  }
+
+  /* ── CABINET BODY ── */
+  .cabinet {
+    width: 100%;
+    max-width: 900px;
+    background: linear-gradient(180deg, #1a1a28 0%, #13131e 100%);
+    border: 2px solid var(--metal-light);
+    border-radius: 18px;
+    padding: 20px 16px 24px;
+    position: relative;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.05),
+      0 20px 60px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+
+  /* ── GAME AREA ── */
+  .game-area {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+  }
+
+  /* ── PLAYER SECTION ── */
+  .player-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  .player-label {
+    font-family: 'Bangers', cursive;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--green-neon);
+    text-shadow: 0 0 10px var(--green-neon);
+  }
+
+  /* ── CUBE GRID ── */
+  .cube-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .cube {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: #1c1c28;
+    border: 1.5px solid #2a2a3a;
+    position: relative;
+    transition: background 0.06s, box-shadow 0.06s, border-color 0.06s;
+    overflow: hidden;
+  }
+
+  /* Cube face illusion */
+  .cube::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%);
+    border-radius: 5px;
+  }
+  .cube::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 30%; height: 30%;
+    background: rgba(0,0,0,0.3);
+    border-radius: 0 0 5px 0;
+  }
+
+  .cube.lit {
+    background: radial-gradient(circle at 35% 35%, #ffe599, #ffaa00 60%, #cc6600);
+    border-color: #ffcc44;
+    box-shadow:
+      0 0 8px var(--amber-glow),
+      0 0 20px rgba(255,140,0,0.5),
+      inset 0 0 12px rgba(255,220,100,0.3);
+  }
+
+  .cube.danger {
+    background: radial-gradient(circle at 35% 35%, #ff9999, #ff3322 60%, #990000);
+    border-color: #ff5544;
+    box-shadow:
+      0 0 8px rgba(255,50,30,0.8),
+      0 0 20px rgba(255,0,0,0.5),
+      inset 0 0 12px rgba(255,100,80,0.3);
+    animation: dangerPulse 0.15s ease-in-out;
+  }
+
+  @keyframes dangerPulse {
+    0%,100%{transform:scale(1);}
+    50%{transform:scale(1.08);}
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 6px;
+    align-self: stretch;
+    background: linear-gradient(180deg, var(--metal-light), var(--metal), var(--metal-light));
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    position: relative;
+    margin: 40px 4px;
+  }
+  .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 10px; height: 10px;
+    background: var(--metal-light);
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(255,255,255,0.15);
+  }
+
+  /* ── DOT MATRIX DISPLAY ── */
+  .matrix-wrap {
+    background: #0d0d0d;
+    border: 2px solid #222;
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .matrix-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+  }
+  canvas.matrix {
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  /* ── STATUS AREA ── */
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 280px;
+    min-height: 22px;
+  }
+  .score-display {
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 1px;
+  }
+  .alive-indicator {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green-neon);
+    box-shadow: 0 0 8px var(--green-neon);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .alive-indicator.dead {
+    background: var(--red-death);
+    box-shadow: 0 0 8px var(--red-death);
+  }
+
+  /* ── CONTROLS ── */
+  .controls-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .arcade-btn {
+    width: 64px; height: 64px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    font-family: 'Bangers', cursive;
+    letter-spacing: 1px;
+    position: relative;
+    transition: transform 0.08s, box-shadow 0.08s;
+    user-select: none;
+    -webkit-user-select: none;
+    background: linear-gradient(180deg, #44ee22 0%, #22aa00 60%, #115500 100%);
+    color: #fff;
+    box-shadow:
+      0 6px 0 #0a3300,
+      0 0 20px rgba(57,255,20,0.4),
+      0 0 40px rgba(57,255,20,0.2),
+      inset 0 1px 0 rgba(255,255,255,0.3);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .arcade-btn:active, .arcade-btn.pressed {
+    transform: translateY(4px);
+    box-shadow:
+      0 2px 0 #0a3300,
+      0 0 12px rgba(57,255,20,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+
+  /* ── CENTRE PANEL ── */
+  .centre-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 0 8px;
+    min-width: 100px;
+  }
+
+  .spray-can {
+    font-size: 36px;
+    filter: drop-shadow(0 0 8px rgba(0,200,255,0.5));
+    animation: sway 3s ease-in-out infinite;
+  }
+  @keyframes sway {
+    0%,100%{transform:rotate(-8deg);}
+    50%{transform:rotate(8deg);}
+  }
+
+  .start-btn {
+    background: linear-gradient(180deg, #ffdd44 0%, #ff9900 60%, #cc5500 100%);
+    color: #1a0a00;
+    font-family: 'Bangers', cursive;
+    font-size: 16px;
+    letter-spacing: 2px;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    cursor: pointer;
+    box-shadow:
+      0 4px 0 #7a3300,
+      0 0 16px rgba(255,150,0,0.4);
+    transition: transform 0.08s, box-shadow 0.08s;
+    white-space: nowrap;
+  }
+  .start-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #7a3300;
+  }
+
+  .session-status {
+    font-family: 'Bangers', cursive;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: var(--blue-neon);
+    text-align: center;
+    text-shadow: 0 0 8px var(--blue-neon);
+    min-height: 40px;
+    line-height: 1.4;
+  }
+
+  /* ── GAME OVER OVERLAY ── */
+  .gameover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+    z-index: 10;
+  }
+  .gameover-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .gameover-title {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(36px, 6vw, 64px);
+    letter-spacing: 4px;
+    color: var(--red-death);
+    text-shadow: 0 0 20px var(--red-death), 0 0 40px rgba(255,50,30,0.5);
+    animation: glitch 0.3s ease-in-out;
+  }
+  @keyframes glitch {
+    0%{transform:skewX(0);}
+    20%{transform:skewX(-6deg) translateX(-4px);}
+    40%{transform:skewX(4deg) translateX(3px);}
+    60%{transform:skewX(-2deg);}
+    100%{transform:skewX(0);}
+  }
+  .gameover-scores {
+    display: flex; gap: 24px;
+  }
+  .score-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 20px;
+    text-align: center;
+  }
+  .score-card .sc-label { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing:2px; }
+  .score-card .sc-val { font-family:'Bangers',cursive; font-size:32px; color:var(--amber); }
+  .score-card .sc-name { font-size:12px; color:rgba(255,255,255,0.7); letter-spacing:1px; }
+
+  /* ── KEYBOARD HINT ── */
+  .key-hint {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1px;
+    padding-top: 8px;
+  }
+
+  /* ── SCAN LINE EFFECT ── */
+  .cabinet::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+    pointer-events: none;
+    border-radius: 18px;
+  }
+
+  @media (max-width: 600px) {
+    .cube-grid { gap: 5px; }
+    .arcade-btn { width: 52px; height: 52px; font-size: 18px; }
+    .centre-panel { min-width: 70px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="marquee">
+  <h1>SUBWAY SURFERS</h1>
+  <div class="marquee-glow"></div>
+</div>
+
+<div class="cabinet">
+  <div class="game-area">
+
+    <!-- PLAYER 1 -->
+    <div class="player-section" id="p1section">
+      <div class="player-label">P1</div>
+      <div class="cube-grid" id="grid1"></div>
+      <div class="matrix-wrap">
+        <canvas class="matrix" id="matrix1" width="72" height="72"></canvas>
+      </div>
+      <div class="status-row">
+        <div class="score-display" id="score1">0s</div>
+        <div class="alive-indicator" id="indicator1"></div>
+      </div>
+      <div class="controls-row">
+        <button class="arcade-btn" id="p1left"  onpointerdown="p1Left()"  ontouchstart="p1Left()">◀</button>
+        <button class="arcade-btn" id="p1right" onpointerdown="p1Right()" ontouchstart="p1Right()">▶</button>
+      </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- CENTRE -->
+    <div class="centre-panel">
+      <div class="spray-can">🎨</div>
+      <button class="start-btn" onclick="startSession()">START<br>GAME</button>
+      <div class="session-status" id="sessionStatus">PRESS START</div>
+    </div>
+
+    <!-- PLAYER 2 -->
+    <div class="player-section" id="p2section">
+      <div class="player-label">P2</div>
+      <div class="cube-grid" id="grid2"></div>
+      <div class="matrix-wrap">
+        <canvas class="matrix" id="matrix2" width="72" height="72"></canvas>
+      </div>
+      <div class="status-row">
+        <div class="score-display" id="score2">0s</div>
+        <div class="alive-indicator" id="indicator2"></div>
+      </div>
+      <div class="controls-row">
+        <button class="arcade-btn" id="p2left"  onpointerdown="p2Left()"  ontouchstart="p2Left()">◀</button>
+        <button class="arcade-btn" id="p2right" onpointerdown="p2Right()" ontouchstart="p2Right()">▶</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GAME OVER OVERLAY -->
+  <div class="gameover-overlay" id="gameoverOverlay">
+    <div class="gameover-title">GAME OVER</div>
+    <div class="gameover-scores" id="gameoverScores"></div>
+    <button class="start-btn" onclick="startSession()" style="margin-top:8px;font-size:18px;padding:12px 28px;">PLAY AGAIN</button>
+  </div>
+
+  <div class="key-hint">P1: A/D keys &nbsp;|&nbsp; P2: ←/→ keys &nbsp;|&nbsp; SPACE: start</div>
+</div>
+
+<script>
+// ── CONSTANTS ──
+const ROWS = 5, COLS = 3;
+const MATRIX_PX = 9; // px per dot on 8x8 matrix (72/8)
+const BG_DOT = '#0d1a0d', ON_DOT = '#ffffff';
+
+// ── STATE ──
+let gameRunning = false;
+let sessionOver = false;
+let startTime = 0;
+let tickInterval = null;
+let fallSpeedMs = 700; // ms per row drop, decreases over time
+let spawnCooldown = [0, 0]; // per player
+let lastFallTime = 0;
+let elapsed = 0;
+
+const players = [
+  { lane: 1, alive: true, score: 0, cubes: [], gridEl: null, matrixCtx: null, scoreEl: null, indEl: null },
+  { lane: 1, alive: true, score: 0, cubes: [], gridEl: null, matrixCtx: null, scoreEl: null, indEl: null }
+];
+
+// ── INIT DOM REFS ──
+function initRefs() {
+  players[0].gridEl    = document.getElementById('grid1');
+  players[0].matrixCtx = document.getElementById('matrix1').getContext('2d');
+  players[0].scoreEl   = document.getElementById('score1');
+  players[0].indEl     = document.getElementById('indicator1');
+  players[1].gridEl    = document.getElementById('grid2');
+  players[1].matrixCtx = document.getElementById('matrix2').getContext('2d');
+  players[1].scoreEl   = document.getElementById('score2');
+  players[1].indEl     = document.getElementById('indicator2');
+  buildGrids();
+}
+
+// ── BUILD CUBE GRIDS ──
+function buildGrids() {
+  [0,1].forEach(pi => {
+    const p = players[pi];
+    p.gridEl.innerHTML = '';
+    for(let r = 0; r < ROWS; r++) {
+      for(let c = 0; c < COLS; c++) {
+        const div = document.createElement('div');
+        div.className = 'cube';
+        div.id = `cube_${pi}_${r}_${c}`;
+        p.gridEl.appendChild(div);
+      }
+    }
+  });
+}
+
+// ── CUBE HELPERS ──
+function setCube(pi, row, col, state) {
+  // state: 'off' | 'lit' | 'danger'
+  const el = document.getElementById(`cube_${pi}_${row}_${col}`);
+  if (!el) return;
+  el.className = 'cube' + (state !== 'off' ? ' ' + state : '');
+}
+
+function clearAllCubes(pi) {
+  for(let r = 0; r < ROWS; r++)
+    for(let c = 0; c < COLS; c++)
+      setCube(pi, r, c, 'off');
+}
+
+// ── MATRIX SPRITE ──
+// 8x8 grid: 3 lane-indicator positions, lane occupies cols 2-3, 4-5, or 5-6
+// Simple pedestrian icon centred in the lane
+
+const LANE_C = [1, 3, 5]; // leftmost col per lane
+
+function drawMatrix(ctx, lane, alive) {
+  ctx.fillStyle = '#080808';
+  ctx.fillRect(0, 0, 72, 72);
+
+  if (!alive) {
+    // draw X
+    ctx.strokeStyle = '#ff3322';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(18,18); ctx.lineTo(54,54); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(54,18); ctx.lineTo(18,54); ctx.stroke();
+    return;
+  }
+
+  const lc = LANE_C[lane];
+  const px = MATRIX_PX;
+
+  function dot(r, c) {
+    if (r < 0 || r > 7 || c < 0 || c > 7) return;
+    ctx.fillStyle = ON_DOT;
+    ctx.fillRect(c * px + 1, r * px + 1, px - 2, px - 2);
+  }
+
+  // head
+  dot(0, lc); dot(0, lc+1);
+  // body
+  dot(1, lc); dot(1, lc+1);
+  dot(2, lc); dot(2, lc+1);
+  dot(3, lc); dot(3, lc+1);
+  // arms
+  if (lc > 0) dot(2, lc-1);
+  if (lc+2 < 8) dot(2, lc+2);
+  // legs
+  dot(4, lc); dot(4, lc+1);
+  dot(5, lc); dot(5, lc+1);
+}
+
+// ── FALLING CUBE OBJECTS ──
+// Each cube: { col, row (float), speed (rows/tick) }
+// row is index 0..4, at row 5 it has "landed"
+
+function spawnCube(pi) {
+  const p = players[pi];
+  // pick a column — guarantee at least one safe lane
+  // find occupied bottom lanes
+  const dangerCols = new Set(
+    p.cubes.filter(c => c.row >= 3).map(c => c.col)
+  );
+  // pick from all cols, but bias toward non-player lane for fairness
+  const all = [0, 1, 2];
+  // always guarantee player lane is safe if two others are already dangerous
+  const safe = all.filter(c => !dangerCols.has(c));
+  if (safe.length === 0) return; // all lanes occupied, skip spawn
+
+  // pick a random column (can be any, game handles it)
+  const col = all[Math.floor(Math.random() * all.length)];
+
+  // don't stack cubes in same column
+  if (p.cubes.some(c => c.col === col && c.row < 1)) return;
+
+  p.cubes.push({ col, row: 0 });
+}
+
+function guaranteeSafePath(pi) {
+  const p = players[pi];
+  // check if all 3 lanes have a cube at row >= 3 (near death)
+  const nearBottom = p.cubes.filter(c => c.row >= 3);
+  const cols = new Set(nearBottom.map(c => c.col));
+  if (cols.size >= 3) {
+    // remove cube from a lane that isn't player's current lane
+    const toSave = [0,1,2].find(c => c !== p.lane && cols.has(c));
+    if (toSave !== undefined) {
+      p.cubes = p.cubes.filter(c => !(c.col === toSave && c.row >= 3));
+    }
+  }
+}
+
+// ── GAME TICK ──
+function tick() {
+  if (!gameRunning) return;
+
+  elapsed = (Date.now() - startTime) / 1000;
+
+  // speed ramp: starts at 700ms per row, gets faster
+  // halves roughly every 30 seconds
+  const speedFactor = Math.max(0.25, 1 / (1 + elapsed / 30));
+  const rowsPerTick = 1; // move 1 row per tick
+  const newFallMs = Math.max(160, 700 * speedFactor);
+  fallSpeedMs = newFallMs;
+
+  [0, 1].forEach(pi => {
+    const p = players[pi];
+    if (!p.alive) return;
+
+    p.score = Math.floor(elapsed);
+
+    // move cubes down
+    p.cubes.forEach(c => c.row += 1);
+
+    // check collision: cube at row 4 (bottom, index 4 = row 5 of grid) in player's lane
+    const hit = p.cubes.some(c => c.row >= ROWS && c.col === p.lane);
+    if (hit) {
+      killPlayer(pi);
+      return;
+    }
+
+    // remove cubes that passed bottom
+    p.cubes = p.cubes.filter(c => c.row < ROWS);
+
+    // guarantee safe path
+    guaranteeSafePath(pi);
+
+    // spawn new cube
+    spawnCooldown[pi]--;
+    if (spawnCooldown[pi] <= 0) {
+      spawnCube(pi);
+      // spawn interval: starts at 3 ticks, decreases over time
+      spawnCooldown[pi] = Math.max(1, Math.round(3 - elapsed / 40));
+    }
+
+    // render
+    renderPlayer(pi);
+    p.scoreEl.textContent = p.score + 's';
+  });
+
+  // check if both dead
+  if (!players[0].alive && !players[1].alive) {
+    endSession();
+    return;
+  }
+
+  // update status
+  updateSessionStatus();
+
+  // reschedule with current speed
+  clearTimeout(tickInterval);
+  tickInterval = setTimeout(tick, fallSpeedMs);
+}
+
+function renderPlayer(pi) {
+  const p = players[pi];
+  clearAllCubes(pi);
+
+  p.cubes.forEach(c => {
+    const row = Math.min(Math.floor(c.row), ROWS - 1);
+    if (row >= 0) setCube(pi, row, c.col, 'lit');
+  });
+
+  drawMatrix(p.matrixCtx, p.lane, p.alive);
+}
+
+function killPlayer(pi) {
+  const p = players[pi];
+  p.alive = false;
+  // flash danger on their lane bottom
+  setCube(pi, ROWS-1, p.lane, 'danger');
+  p.indEl.classList.add('dead');
+  drawMatrix(p.matrixCtx, p.lane, false);
+  updateSessionStatus();
+}
+
+function updateSessionStatus() {
+  const s = document.getElementById('sessionStatus');
+  const a0 = players[0].alive, a1 = players[1].alive;
+  if (a0 && a1) {
+    s.textContent = '🏃 RUNNING...';
+  } else if (!a0 && a1) {
+    s.innerHTML = '💀 P1 OUT<br>P2 SURVIVES!';
+  } else if (a0 && !a1) {
+    s.innerHTML = '💀 P2 OUT<br>P1 SURVIVES!';
+  }
+}
+
+function endSession() {
+  gameRunning = false;
+  clearTimeout(tickInterval);
+
+  const s0 = players[0].score, s1 = players[1].score;
+  const winner = s0 > s1 ? 'P1 WINS!' : s1 > s0 ? 'P2 WINS!' : 'DRAW!';
+
+  document.getElementById('gameoverScores').innerHTML = `
+    <div class="score-card">
+      <div class="sc-name">PLAYER 1</div>
+      <div class="sc-val">${s0}s</div>
+      <div class="sc-label">${s0 >= s1 ? '🏆 WINNER' : ''}</div>
+    </div>
+    <div class="score-card" style="align-self:center;font-family:'Bangers',cursive;font-size:20px;color:var(--green-neon);text-shadow:0 0 10px var(--green-neon);">${winner}</div>
+    <div class="score-card">
+      <div class="sc-name">PLAYER 2</div>
+      <div class="sc-val">${s1}s</div>
+      <div class="sc-label">${s1 > s0 ? '🏆 WINNER' : ''}</div>
+    </div>
+  `;
+
+  document.getElementById('gameoverOverlay').classList.add('visible');
+}
+
+// ── START SESSION ──
+function startSession() {
+  document.getElementById('gameoverOverlay').classList.remove('visible');
+  clearTimeout(tickInterval);
+
+  [0,1].forEach(pi => {
+    const p = players[pi];
+    p.lane = 1;
+    p.alive = true;
+    p.score = 0;
+    p.cubes = [];
+    p.indEl.classList.remove('dead');
+    p.scoreEl.textContent = '0s';
+    clearAllCubes(pi);
+    drawMatrix(p.matrixCtx, 1, true);
+  });
+
+  spawnCooldown = [2, 2];
+  fallSpeedMs = 700;
+  elapsed = 0;
+  startTime = Date.now();
+  gameRunning = true;
+  sessionOver = false;
+
+  document.getElementById('sessionStatus').textContent = '🏃 RUNNING...';
+
+  tickInterval = setTimeout(tick, fallSpeedMs);
+}
+
+// ── CONTROLS ──
+function p1Left()  { if(players[0].alive && gameRunning) { players[0].lane = Math.max(0, players[0].lane-1); drawMatrix(players[0].matrixCtx, players[0].lane, true); } }
+function p1Right() { if(players[0].alive && gameRunning) { players[0].lane = Math.min(2, players[0].lane+1); drawMatrix(players[0].matrixCtx, players[0].lane, true); } }
+function p2Left()  { if(players[1].alive && gameRunning) { players[1].lane = Math.max(0, players[1].lane-1); drawMatrix(players[1].matrixCtx, players[1].lane, true); } }
+function p2Right() { if(players[1].alive && gameRunning) { players[1].lane = Math.min(2, players[1].lane+1); drawMatrix(players[1].matrixCtx, players[1].lane, true); } }
+
+// Button press animation
+function flashBtn(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('pressed');
+  setTimeout(() => el.classList.remove('pressed'), 120);
+}
+
+document.addEventListener('keydown', e => {
+  switch(e.key) {
+    case 'a': case 'A': p1Left();  flashBtn('p1left');  break;
+    case 'd': case 'D': p1Right(); flashBtn('p1right'); break;
+    case 'ArrowLeft':  e.preventDefault(); p2Left();  flashBtn('p2left');  break;
+    case 'ArrowRight': e.preventDefault(); p2Right(); flashBtn('p2right'); break;
+    case ' ': e.preventDefault(); startSession(); break;
+  }
+});
+
+// ── BOOT ──
+initRefs();
+// draw idle matrices
+drawMatrix(players[0].matrixCtx, 1, true);
+drawMatrix(players[1].matrixCtx, 1, true);
+</script>
+</body>
+</html>
