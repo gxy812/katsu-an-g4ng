@@ -1,5 +1,7 @@
 testbench test_simple {
     mux4to1 mux
+    abs abs
+    reverse rev
     
     const NUM_TESTS = 4
     const TEST_CASES = {
@@ -11,14 +13,50 @@ testbench test_simple {
     const EXPECTED = {
         1, 0, 1, 1
     }
+    const TEST_CASES_32 = {
+        32hFFFFFFFE,
+        32h00000002,
+        32h80000000,
+        32hAAAA5555
+    }
+    const EXPECTED_ABS = {
+        32h00000002,
+        32h00000002,
+        32h80000000,
+        32h5555AAAB
+    }
+    const EXPECTED_REV = {
+        32h7FFFFFFF,
+        32h40000000,
+        32h00000001,
+        32hAAAA5555
+    }
 
-    test myTest {
+    test muxTest {
         repeat(i, NUM_TESTS) {
             mux.data = TEST_CASES[i][-1:2]
             mux.s0 = TEST_CASES[i][0]
             mux.s1 = TEST_CASES[i][1]
             $tick()
             $assert(mux.y == EXPECTED[i])
+        }
+    }
+    
+    test absTest {
+        repeat(i, NUM_TESTS) {
+            abs.in = TEST_CASES_32[i]
+            $tick()
+            $assert(abs.out == EXPECTED_ABS[i])
+            $print("Passed test case %d", i)
+        }
+    }
+    
+    test revTest {
+        repeat(i, NUM_TESTS) {
+            rev.in = TEST_CASES_32[i]
+            $tick()
+            $assert(rev.out == EXPECTED_REV[i])
+            $print("Passed test case %d", i)
         }
     }
 }
