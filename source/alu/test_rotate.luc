@@ -1,0 +1,29 @@
+testbench test_rotate {
+    rotater rotate
+    
+    const TEST_CASES_ROTATE = $reverse({
+            // 1. ROL: simple left rotate
+            c{32d1,           32d1,           2b00, 32d2},
+            // 2. ROL: overflow bits appear on the right
+            c{32h80000000,    32d4,           2b00, 32h00000008},
+            // 3. ROL: shift amount masked (33 -> 1)
+            c{32d1,           32d33,          2b00, 32d2},
+            // 4. ROR: simple logical right rotate
+            c{32d8,           32d2,           2b01, 32d2},
+            // 5. ROR: overflow bits appear on the left
+            c{32h80000001,    32d1,           2b01, 32hC0000000},
+            // 6. ROR: shift amount masked (34 -> 2)
+            c{32h80000008,    32d34,          2b01, 32h20000002}
+        })
+    
+    test rotaterTest {
+        repeat (i, 6){
+            rotate.a  = TEST_CASES_ROTATE[i][97:66]
+            rotate.b  = TEST_CASES_ROTATE[i][65:34]
+            rotate.alufn = c{4b1001,TEST_CASES_ROTATE[i][33:32]}
+            $tick()
+            $assert(rotate.shift == TEST_CASES_ROTATE[i][31:0])
+            $print("PASS test case: %d", i+1)
+        }
+    }
+}

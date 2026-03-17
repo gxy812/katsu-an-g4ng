@@ -6,10 +6,10 @@ module rotater #(SIZE = 32 : SIZE > 2) (
 ) {
     always {
         if (alufn[0]) { // right rotate
-            shift = a >> b | a << (SIZE - b)
+            shift = (a >> b) | (a << (SIZE - b))
         }
         else {
-            shift = a << b | a << (SIZE - b)
+            shift = (a << b) | (a >> (SIZE - b))
         }
     }
 }

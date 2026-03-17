@@ -208,6 +208,12 @@
                     "type": "DiskFile",
                     "path": "source/alu/abs.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/alu/test_rotate.luc"
+                }
             }
         ],
         "constraintFiles": [
