@@ -98,12 +98,6 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/simple/left_shifter.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
                     "path": "source/simple/reverse.luc"
                 }
             },

@@ -39,7 +39,7 @@ module fsm_eq #(NUM_TESTS ~ 4: NUM_TESTS > 0)(
             States.START:
                 led_indicator = 7h01
                 index.d = 0
-                states.d = States.LOOP
+                states.d = States.WAIT_1
             States.LOOP:
                 led_indicator = 7h41 // bit 6 is the run flag
                 if (rising_edge.out) {
