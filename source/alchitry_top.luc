@@ -25,7 +25,7 @@ module alchitry_top (
             // Reduce DIV values for simulation so it doesn't take forever
             multi_seven_seg seg (#DIV($is_sim() ? 0 : 16), #DIGITS(4))
 
-            counter slow_clock(#DIV($is_sim() ? 8 : 27), #SIZE(1))
+            counter slow_clock(#DIV($is_sim() ? 8 : 26), #SIZE(1))
             fsm_manual fm(.btn(start_button.out))
             #NUM_TESTS(25) {
                 fsm_eq fe(.slow_clock(slow_clock.value), .start(start_button.out))
