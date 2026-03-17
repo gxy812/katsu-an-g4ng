@@ -27,11 +27,13 @@ module alchitry_top (
 
             counter slow_clock(#DIV($is_sim() ? 8 : 27), #SIZE(1))
             fsm_manual fm(.btn(start_button.out))
-            fsm_eq fe(.slow_clock(slow_clock.value), .start(start_button.out), #NUM_TESTS(16))
+            #NUM_TESTS(25) {
+                fsm_eq fe(.slow_clock(slow_clock.value), .start(start_button.out))
+                datapath_eq de(.high_btn(high_button.out), .c(alu.out))
+            }
             .high_btn(high_button.out) {
                 datapath_manual dm(.reg_en(fm.reg_en), .c(alu.out))
             }
-            datapath_eq de(.high_btn(high_button.out), .c(alu.out))
         }
     }
     
@@ -56,7 +58,7 @@ module alchitry_top (
         alu.alufn = de.alufn
         fe.equal = de.equal
         led = c{fe.error, fe.led_indicator}
-        seg.values = {4h0, 4h0, 4h0, de.count}
+        seg.values = {4h0, 4h0, de.count[7:4], de.count[3:0]}
         io_led[1] = de.display[15:8]
         io_led[0] = de.display[7:0]
 
