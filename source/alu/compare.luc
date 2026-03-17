@@ -10,7 +10,7 @@ module compare (
         mux.data[0] = 0
         mux.data[1] = z
         mux.data[2] = n^v
-        mux.data[3] = (n^v) + z
+        mux.data[3] = (n^v) | z
         mux.s0 = alufn[1]
         mux.s1 = alufn[2]
         cmp = mux.y
