@@ -139,7 +139,9 @@ module datapath_eq #(NUM_TESTS ~ 4 : NUM_TESTS > 0)(
     }
 
     always {
-        aa.d = TEST_VALUES_ALU[i][104:73] ^ c{16b0, inv_sw}
+        aa.d = TEST_VALUES_ALU[i][104:73] ^ c{16b0, inv_sw} // inv_sw is the dip switches from actual fpga board. 
+        // if any of the dip switches are flipped, the 'A' input will be wrong and thus output of ALU is wrong,
+        //triggering the error.
         bb.d = TEST_VALUES_ALU[i][72:41]
         alufn = TEST_VALUES_ALU[i][40:35]
         

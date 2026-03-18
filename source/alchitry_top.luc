@@ -23,9 +23,11 @@ module alchitry_top (
         
         .rst(rst) {
             // Reduce DIV values for simulation so it doesn't take forever
-            multi_seven_seg seg (#DIV($is_sim() ? 0 : 16), #DIGITS(4))
+            multi_seven_seg seg (#DIV($is_sim() ? 0 : 16), #DIGITS(4)) // turns on one segment at a time
+            // but very quickly, so it looks like the it is a steady number shown on the display
 
-            counter slow_clock(#DIV($is_sim() ? 8 : 26), #SIZE(1))
+            counter slow_clock(#DIV($is_sim() ? 8 : 26), #SIZE(1)) // fsm to run at a slower speedso we can 
+            //see the test cases being run
             fsm_manual fm(.btn(start_button.out))
             #NUM_TESTS(25) {
                 fsm_eq fe(.slow_clock(slow_clock.value), .start(start_button.out))
@@ -46,7 +48,7 @@ module alchitry_top (
         
         usb_tx = usb_rx         // loop serial port
         
-        seg.values = 4x{{4h0}}
+        seg.values = 4x{{4h0}} // assign all 0 first
         
         dm.half = c{io_dip[1], io_dip[0]}
         dm.alufn_in = io_dip[2][5:0]
@@ -57,9 +59,10 @@ module alchitry_top (
         alu.b = de.b
         alu.alufn = de.alufn
         fe.equal = de.equal
-        led = c{fe.error, fe.led_indicator}
+        led = c{fe.error, fe.led_indicator} // error bit is MSB so it will appear at the bottom of the 
+        // leds
         seg.values = {4h0, 4h0, de.count[7:4], de.count[3:0]}
-        io_led[1] = de.display[15:8]
+        io_led[1] = de.display[15:8] // result of ALU displayed on io_led
         io_led[0] = de.display[7:0]
 
         io_segment = ~seg.seg // connect segments to the driver

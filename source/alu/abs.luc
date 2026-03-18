@@ -4,7 +4,8 @@ module abs #(SIZE = 32 : SIZE > 2)(
 ) {
     sig n
     always {
-        n = in[-1]
-        out = (in ^ SIZEx{n}) + n
+        n = in[-1] //msb of in
+        out = (in ^ SIZEx{n}) + n // if negative number signalled by 1 in msb, then xor all bits of in and add
+        // 1
     }
 }
