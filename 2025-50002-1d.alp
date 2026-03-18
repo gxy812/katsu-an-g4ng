@@ -55,6 +55,18 @@
             },
             {
                 "file": {
+                    "type": "DiskFile",
+                    "path": "source/regfile_memory.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/regfile_unit.luc"
+                }
+            },
+            {
+                "file": {
                     "type": "Component",
                     "path": "Pulses/edge_detector.luc"
                 }
