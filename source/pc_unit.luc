@@ -1,0 +1,84 @@
+module pc_unit (
+    input clk,  // clock
+    input rst,  // reset
+    input slowclk, // slowclock to advance pc
+    input id[16],
+    input pcsel[3],
+    input reg_data_1[32],
+    output pc_4[32],
+    output pc_4_sxtc[32],
+    output pcsel_out[32], // for debug only, does not exist in pc_unit
+    output ia[32] // if ia31 signal is 1, means we can access reg_data[31], which can be either 0 or 1,
+// else keep it at 0 (user level)
+) {
+    
+    dff pc[32](#INIT(0),.clk(clk)) // PC Register
+    
+    sig pcsel_out_sig[32] // output of pcsel unit
+    sig pc_4sxtc32_sig[32] // raw pc + 4 + 4*SXT(C)
+    sig pc_4sxtc_sig[32] // pc + 4 + 4*SXT(C) with bit 31 handled
+    sig pc_4sig[32] // pc + 4 with bit 32 handled
+    sig pc_4raw[32] // raw pc + 4
+    sig jmp_addr[32] // this is where to go (address location)
+    sig jmp_pc[32] // handling ia31
+    sig ia31
+    
+    always {
+        pcsel_out_sig = 0
+        pc.d = pc.q
+        ia31 = pc.q[31]
+        
+     
+        // increment pc by 4
+        pc_4raw = pc.q + 4
+        pc_4sig = c{ia31, pc_4raw[30:0]}     
+       
+        // TASK 4
+        // shift-and-add pc by 4
+        pc_4sxtc32_sig = pc.q + 4 + 4 * c{16x{id[15]}, id[15:0]}
+        pc_4sxtc_sig = c{ia31, pc_4sxtc32_sig[30:0]}
+        
+        jmp_addr = c{reg_data_1[30:2], b00}
+        if(ia31)
+        {
+            jmp_pc = c{reg_data_1[31], jmp_addr[30:0]}
+        }
+        else{
+            jmp_pc = c{b0, jmp_addr[30:0]}
+        }
+        
+        // TASK 1 
+        // PCSEL mux 
+        case (pcsel){
+            3b000:
+                pcsel_out_sig = pc_4sig
+            3b001:
+                pcsel_out_sig = pc_4sxtc_sig
+            3b010:
+                pcsel_out_sig = jmp_pc
+            3b011:
+                pcsel_out_sig = 32h80000004 // explicitly change to supervisor mode
+            3b100:
+                pcsel_out_sig = 32h80000008 // supervisor mode
+        }
+        
+
+        // outside the mux: advance the PC only when slowclk is 1 
+        if(slowclk){
+            pc.d = c{pcsel_out_sig[31:2], b00}
+        }
+        
+        // Task 2
+        // RESET mux 
+        if(rst)
+            pc.d = 32h80000000
+        
+        // output connections
+        ia = pc.q
+        pc_4 = pc_4sig
+        pc_4_sxtc = pc_4sxtc_sig
+        pcsel_out = pcsel_out_sig
+        
+        
+    }
+}
