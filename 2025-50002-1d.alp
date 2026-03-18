@@ -62,6 +62,12 @@
             {
                 "file": {
                     "type": "DiskFile",
+                    "path": "source/motherboard.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
                     "path": "source/regfile_memory.luc"
                 }
             },
