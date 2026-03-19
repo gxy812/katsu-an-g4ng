@@ -114,12 +114,13 @@ module beta_cpu (
                 wdsel_out = mem_data_input  
         }
         // connect asel and bsel to alu, wdsel to regfile
-        
+        regfile_system.wdsel_out = wdsel_out
         
         // remaining beta datapath connections
         // connect alu_system with asel_out and bsel_out
         alu_system.a = asel_out
         alu_system.b = bsel_out
+        alu_system.alufn = control_system.alufn
         // connect regfile_system with wdsel_out 
         // connect mem_data_address with the output of the alu
         mem_data_address = alu_system.out
