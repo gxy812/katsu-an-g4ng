@@ -19,6 +19,36 @@
             },
             {
                 "file": {
+                    "type": "Component",
+                    "path": "Miscellaneous/counter.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "Component",
+                    "path": "Miscellaneous/decoder.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "Component",
+                    "path": "Miscellaneous/pipeline.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "Component",
+                    "path": "Pulses/edge_detector.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "Component",
+                    "path": "Conditioning/button_conditioner.luc"
+                }
+            },
+            {
+                "file": {
                     "type": "DiskFile",
                     "path": "source/decimal_counter.luc"
                 }
@@ -32,67 +62,13 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/multi_seven_seg.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "Component",
-                    "path": "Miscellaneous/counter.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "Component",
-                    "path": "Miscellaneous/decoder.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
                     "path": "source/seven_seg.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/pc_unit.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/motherboard.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/regfile_memory.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/regfile_unit.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "Component",
-                    "path": "Pulses/edge_detector.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "Component",
-                    "path": "Miscellaneous/pipeline.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "Component",
-                    "path": "Conditioning/button_conditioner.luc"
+                    "path": "source/multi_seven_seg.luc"
                 }
             },
             {
@@ -140,13 +116,13 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu/test_shifter.luc"
+                    "path": "source/alu/shifter.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu/shifter.luc"
+                    "path": "source/alu/test_shifter.luc"
                 }
             },
             {
@@ -164,6 +140,12 @@
             {
                 "file": {
                     "type": "DiskFile",
+                    "path": "source/alu/test_compare.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
                     "path": "source/alu/boolean.luc"
                 }
             },
@@ -176,12 +158,6 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu/test_compare.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
                     "path": "source/alu/multiplier.luc"
                 }
             },
@@ -189,6 +165,24 @@
                 "file": {
                     "type": "DiskFile",
                     "path": "source/alu/test_multiplier.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/alu/rotater.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/alu/test_rotate.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/alu/abs.luc"
                 }
             },
             {
@@ -218,19 +212,25 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu/rotater.luc"
+                    "path": "source/pc_unit.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu/abs.luc"
+                    "path": "source/motherboard.luc"
                 }
             },
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu/test_rotate.luc"
+                    "path": "source/regfile_memory.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/regfile_unit.luc"
                 }
             }
         ],
