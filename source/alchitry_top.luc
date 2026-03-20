@@ -1,41 +1,92 @@
-module alchitry_top (
+module au_top (
     input clk,              // 100MHz clock
     input rst_n,            // reset button (active low)
-    output led[8],          // 8 user controllable LEDs
-    input usb_rx,            // USB->Serial input
-    output usb_tx,           // USB->Serial output
-    output io_led[3][8],     // LEDs on IO Shield
-    output io_segment[8],        // 7-segment LEDs on IO Shield
-    output io_select[4],        // Digit select on IO Shield
-    input io_button[5],      // 5 buttons on IO Shield
-    input io_dip[3][8]       // DIP switches on IO Shield
+    output led [8],         // 8 user controllable LEDs
+    input usb_rx,           // USB->Serial input
+    output usb_tx,          // USB->Serial output
+    output io_led [3][8],   // LEDs on IO Shield
+    output io_segment[8],      // 7-segment LEDs on IO Shield
+    output io_select[4],      // Digit select on IO Shield
+    input io_button [5],    // 5 buttons on IO Shield
+    input io_dip [3][8]     // DIP switches on IO Shield
 ) {
     
-    sig rst                 // reset signal
+    const CHAIN = 2
+    const SPEED = 7
+    sig rst                  // reset signal
     
-    .clk(clk) {
-        // The reset conditioner is used to synchronize the reset signal to the FPGA
-        // clock. This ensures the entire FPGA comes out of reset at the same time.
-        reset_conditioner reset_cond
-    }
-    const CLK_FREQ = $is_sim() ? 1000 : 100000000 // put 1000 for sim, 100000000 otherwise in hardware
+    max7219_driver max7219_driver(#CHAIN(CHAIN), #SPEED(SPEED), .clk(clk), .rst(rst)) 
+    reset_conditioner reset_cond(.clk(clk))
+    counter refresh(.clk(clk), .rst(rst), #DIV(8))
     
-    tester_manual_beta tester_manual_beta(.clk(clk), .rst(rst), .io_button(io_button), .io_dip(io_dip), #CLK_FREQ(CLK_FREQ))
- 
     always {
-        reset_cond.in = ~rst_n  // input raw inverted reset signal
-        rst = reset_cond.out    // conditioned reset
+        reset_cond.in = ~rst_n   // input raw inverted reset signal
+        rst = reset_cond.out     // conditioned reset
         
-        led = 8h00             // turn LEDs off
+        led = c{3b0, io_button}  // connect buttons to LEDs
         
         usb_tx = usb_rx          // loop serial port
         
+        
+        io_segment = 8h00 
+        io_select = 4h0 
+        io_led = 3x{{h00}} 
+        
+        max7219_driver.new_ = max7219_driver.done & refresh.value
+        
+        //max7219_driver.segment_values = {
+        //    $reverse(32hDEADBEEF),
+        //    $reverse(32hBEEFDEAD),
+        //    $reverse(32h02468ACE),
+        //    $reverse(32h13579BDF),
+        //    $reverse(32h01234567),
+        //    $reverse(32h09876543),
+        //    $reverse(32hAAAAAAAA),
+        //    $reverse(32h55555555)
+        //}
+        max7219_driver.segment_values = {
+            $reverse(16hAAAAAAAA),
+            $reverse(16hAAAAAAAA),
+            $reverse(16hAAAAAAAA),
+            $reverse(16hAAAAAAAA),
+            $reverse(16hAAAAAAAA),
+            $reverse(16hAAAAAAAA),
+            $reverse(16hAAAAAAAA),
+            $reverse(16hAAAAAAAA)
+        }
+        
+        // ------- DEBUG SIGNALS ------ // 
+        led = max7219_driver.debug_state
+        led[7:4] = max7219_driver.debug_driver_state
+        
+        io_led[0] = max7219_driver.debug_data
+        io_led[1] = max7219_driver.debug_address
+        io_led[2] = max7219_driver.debug_writer // only view the data writer counter
 
-        io_led = tester_manual_beta.io_led
-        io_segment = tester_manual_beta.io_segment
-        io_select = tester_manual_beta.io_select
-        led = tester_manual_beta.led
-
-
+        if (io_dip[2] == 8d1){
+            io_led[2][7] = max7219_driver.max7219_data
+            io_led[2][6] = max7219_driver.max7219_load
+            io_led[2][5] = max7219_driver.max7219_clock
+        }
+        
+        else if (io_dip[2] == 8d2){
+            // show segments received by driver 
+            io_led[1] = max7219_driver.debug_segment_current  
+        }
+        
+        else if (io_dip[2] == 8d3){
+            io_led[1] = max7219_driver.debug_segment_original
+        }
+        else if (io_dip[2] == 8d4){
+            io_led[1] = max7219_driver.debug_digit_index_original
+        }
+        // -------------------------------- //
+        
+        
+        // actual output
+        io_segment[4] = max7219_driver.max7219_data // A45 
+        io_segment[3] = max7219_driver.max7219_load // A46
+        io_segment[1] = max7219_driver.max7219_clock // A6
+        
     }
 }

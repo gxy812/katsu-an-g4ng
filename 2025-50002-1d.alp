@@ -274,6 +274,18 @@
                     "type": "Component",
                     "path": "Memory/simple_dual_port_ram.v"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/max7219_driver.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/max7219_serial.luc"
+                }
             }
         ],
         "constraintFiles": [
