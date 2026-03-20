@@ -34,7 +34,7 @@ module tester_manual_beta#(
     edge_detector fastclock_edge(#RISE(1), #FALL(0), .clk(clk)) 
     
     // DISPLAY (for easy debugging)
-    multi_seven_seg seg(.clk(clk),.rst(rst), #DIV($is_sim() ? 5 : 16)) // put div 5 for sim
+    multi_seven_seg seg(.clk(clk),.rst(rst), #DIV($is_sim() ? 2 : 16)) // put div 5 for sim
     
     always {
         io_led = 3x{{h00}}       // turn all LED off at first

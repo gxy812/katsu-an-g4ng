@@ -2,84 +2,40 @@ module alchitry_top (
     input clk,              // 100MHz clock
     input rst_n,            // reset button (active low)
     output led[8],          // 8 user controllable LEDs
-    input usb_rx,           // USB->Serial input
-    output usb_tx,          // USB->Serial output
-    output io_led[3][8],    // LEDs on IO Shield
-    output io_segment[8],   // 7-segment LEDs on IO Shield
-    output io_select[4],    // Digit select on IO Shield
-    input io_button[5],     // 5 buttons on IO Shield
-    input io_dip[3][8]      // DIP switches on IO Shield
+    input usb_rx,            // USB->Serial input
+    output usb_tx,           // USB->Serial output
+    output io_led[3][8],     // LEDs on IO Shield
+    output io_segment[8],        // 7-segment LEDs on IO Shield
+    output io_select[4],        // Digit select on IO Shield
+    input io_button[5],      // 5 buttons on IO Shield
+    input io_dip[3][8]       // DIP switches on IO Shield
 ) {
     
     sig rst                 // reset signal
     
-    alu alu
     .clk(clk) {
         // The reset conditioner is used to synchronize the reset signal to the FPGA
         // clock. This ensures the entire FPGA comes out of reset at the same time.
         reset_conditioner reset_cond
-        button_conditioner start_button(#CLK_FREQ($is_sim() ? 1000 : 100000000), .in(io_button[0]))
-        button_conditioner high_button(#CLK_FREQ($is_sim() ? 1000 : 100000000), .in(io_button[1]))
-        
-        .rst(rst) {
-            // Reduce DIV values for simulation so it doesn't take forever
-            multi_seven_seg seg (#DIV($is_sim() ? 0 : 16), #DIGITS(4)) // turns on one segment at a time
-            // but very quickly, so it looks like the it is a steady number shown on the display
-
-            counter slow_clock(#DIV($is_sim() ? 8 : 26), #SIZE(1)) // fsm to run at a slower speedso we can 
-            //see the test cases being run
-            fsm_manual fm(.btn(start_button.out))
-            #NUM_TESTS(25) {
-                fsm_eq fe(.slow_clock(slow_clock.value), .start(start_button.out))
-                datapath_eq de(.high_btn(high_button.out), .c(alu.out))
-            }
-            .high_btn(high_button.out) {
-                datapath_manual dm(.reg_en(fm.reg_en), .c(alu.out))
-            }
-        }
     }
+    const CLK_FREQ = $is_sim() ? 1000 : 100000000 // put 1000 for sim, 100000000 otherwise in hardware
     
+    tester_manual_beta tester_manual_beta(.clk(clk), .rst(rst), .io_button(io_button), .io_dip(io_dip), #CLK_FREQ(CLK_FREQ))
+ 
     always {
         reset_cond.in = ~rst_n  // input raw inverted reset signal
         rst = reset_cond.out    // conditioned reset
         
-        led = c{3b0, io_button} // connect buttons to LEDs
-        io_led = 3x{{8h0}}
+        led = 8h00             // turn LEDs off
         
-        usb_tx = usb_rx         // loop serial port
+        usb_tx = usb_rx          // loop serial port
         
-        seg.values = 4x{{4h0}} // assign all 0 first
-        
-        dm.half = c{io_dip[1], io_dip[0]}
-        dm.alufn_in = io_dip[2][5:0]
 
-        de.i = fe.index_value
-        de.inv_sw = c{io_dip[1], io_dip[0]}
-        alu.a = de.a
-        alu.b = de.b
-        alu.alufn = de.alufn
-        fe.equal = de.equal
-        led = c{fe.error, fe.led_indicator} // error bit is MSB so it will appear at the bottom of the 
-        // leds
-        seg.values = {4h0, 4h0, de.count[7:4], de.count[3:0]}
-        io_led[1] = de.display[15:8] // result of ALU displayed on io_led
-        io_led[0] = de.display[7:0]
+        io_led = tester_manual_beta.io_led
+        io_segment = tester_manual_beta.io_segment
+        io_select = tester_manual_beta.io_select
+        led = tester_manual_beta.led
 
-        io_segment = ~seg.seg // connect segments to the driver
-        io_select = ~seg.sel  // connect digit select to the driver
 
-        if (io_dip[2][6]) { // Manual enabled
-            alu.a = dm.a
-            alu.b = dm.b
-            alu.alufn = dm.alufn
-            io_led[1] = dm.display[15:8]
-            io_led[0] = dm.display[7:0]
-            io_segment = ~fm.seg_indicator
-            io_select = 4hE
-        }
-        
-        io_led[2][0] = alu.z
-        io_led[2][1] = alu.v
-        io_led[2][2] = alu.n
     }
 }

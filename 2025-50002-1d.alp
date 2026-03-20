@@ -50,18 +50,6 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/decimal_counter.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/multi_decimal_counter.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
                     "path": "source/seven_seg.luc"
                 }
             },
@@ -200,18 +188,6 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/fsm_manual.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/fsm_eq.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
                     "path": "source/pc_unit.luc"
                 }
             },
@@ -224,6 +200,12 @@
             {
                 "file": {
                     "type": "DiskFile",
+                    "path": "source/memory_unit.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
                     "path": "source/regfile_memory.luc"
                 }
             },
@@ -231,6 +213,24 @@
                 "file": {
                     "type": "DiskFile",
                     "path": "source/regfile_unit.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/instruction_rom.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/control_unit.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/beta_cpu.luc"
                 }
             },
             {
@@ -260,19 +260,19 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/instruction_rom.luc"
+                    "path": "source/tester_manual_beta.luc"
                 }
             },
             {
                 "file": {
-                    "type": "DiskFile",
-                    "path": "source/control_unit.luc"
+                    "type": "Component",
+                    "path": "Memory/simple_ram.v"
                 }
             },
             {
                 "file": {
-                    "type": "DiskFile",
-                    "path": "source/test_manual_beta.luc"
+                    "type": "Component",
+                    "path": "Memory/simple_dual_port_ram.v"
                 }
             }
         ],
