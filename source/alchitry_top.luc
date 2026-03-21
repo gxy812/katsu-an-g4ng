@@ -1,4 +1,4 @@
-module au_top (
+module alchitry_top (
     input clk,              // 100MHz clock
     input rst_n,            // reset button (active low)
     output led [8],         // 8 user controllable LEDs
@@ -11,8 +11,9 @@ module au_top (
     input io_dip [3][8]     // DIP switches on IO Shield
 ) {
     
-    const CHAIN = 2
-    const SPEED = 7
+    const CHAIN = 4
+    const W = CHAIN
+    const SPEED = 6
     sig rst                  // reset signal
     
     max7219_driver max7219_driver(#CHAIN(CHAIN), #SPEED(SPEED), .clk(clk), .rst(rst)) 
@@ -32,27 +33,16 @@ module au_top (
         io_select = 4h0 
         io_led = 3x{{h00}} 
         
-        max7219_driver.new_ = max7219_driver.done & refresh.value
-        
-        //max7219_driver.segment_values = {
-        //    $reverse(32hDEADBEEF),
-        //    $reverse(32hBEEFDEAD),
-        //    $reverse(32h02468ACE),
-        //    $reverse(32h13579BDF),
-        //    $reverse(32h01234567),
-        //    $reverse(32h09876543),
-        //    $reverse(32hAAAAAAAA),
-        //    $reverse(32h55555555)
-        //}
+        max7219_driver.new_ = max7219_driver.done & refresh.value[7]
         max7219_driver.segment_values = {
-            $reverse(16hAAAAAAAA),
-            $reverse(16hAAAAAAAA),
-            $reverse(16hAAAAAAAA),
-            $reverse(16hAAAAAAAA),
-            $reverse(16hAAAAAAAA),
-            $reverse(16hAAAAAAAA),
-            $reverse(16hAAAAAAAA),
-            $reverse(16hAAAAAAAA)
+            Wx{hAA},
+            Wx{hAA},
+            Wx{hAA},
+            Wx{hAA},
+            Wx{hAA},
+            Wx{hAA},
+            Wx{hAA},
+            Wx{hAA}
         }
         
         // ------- DEBUG SIGNALS ------ // 
