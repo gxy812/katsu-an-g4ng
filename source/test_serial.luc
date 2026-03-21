@@ -1,0 +1,35 @@
+testbench test_serial {
+    sig clk
+    sig rst
+    
+    .clk(clk), .rst(rst) {
+        max7219_serial serial(#SPEED(1))
+    }
+
+    fun tick_clock() {
+        clk = 1
+        $tick() // tick without capturing signals
+        clk = 0
+        $tick()
+    }
+
+    test myTest {
+        clk = 0 // initialize the value
+        rst = 1
+        $tick() // capture initial state
+        rst = 0
+        serial.addr_in = 8h0C
+        serial.din = 8h33
+        serial.start = 1
+        $tick_clock()
+        serial.start = 0
+        repeat(160) {
+            $tick_clock()
+            if (serial.debug_state != 8b11) {
+                $print("Wow not transferring address")
+            }
+        }
+
+        // test goes here
+    }
+}

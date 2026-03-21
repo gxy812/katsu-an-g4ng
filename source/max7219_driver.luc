@@ -127,7 +127,7 @@ module max7219_driver #(
                 debug_driver_state = b0011
                 max.start = 1
                 max_addr = c{CHAINx{$reverse(h0F)}}
-                max_data = c{CHAINx{$reverse(h01)}} // loop here to test
+                max_data = c{CHAINx{h01}} // loop here to test
                 
                 if(max.busy != 1) { 
                     state.d = States.SEND_OFF_DISPLAY_TEST
@@ -159,7 +159,7 @@ module max7219_driver #(
                 debug_driver_state = b0101
                 max.start = 1
                 max_addr = c{CHAINx{$reverse(h0A)}}
-                max_data = c{CHAINx{$reverse(h00)}}
+                max_data = c{CHAINx{h00}}
                 
                 if(max.busy != 1) { 
                     state.d = States.IDLE
@@ -169,7 +169,7 @@ module max7219_driver #(
                 debug_driver_state = b0110
                 max.start = 1
                 max_addr = c{CHAINx{$reverse(h0B)}}
-                max_data = c{CHAINx{$reverse(h07)}} // scan line register shows every digit
+                max_data = c{CHAINx{h07}} // scan line register shows every digit
                 
                 if(max.busy != 1) {
                     state.d = States.SEND_WORD
@@ -186,7 +186,6 @@ module max7219_driver #(
                     // write to next digit reg address immediately since there's no other matrix in the chain
                     digit_index.d = digit_index.q + 1
                     
-                    
                     if(&digit_index.q) { // have reached reg DIGIT address 8
                         state.d = States.SEND_TURN_ON // all segments are written     
                     }
@@ -196,7 +195,7 @@ module max7219_driver #(
                 debug_driver_state = b0010 // this will show when max7219 is finishing the previous state (SHUTDOWN) bit loading
                 max.start = 1
                 max_addr = c{CHAINx{$reverse(h0C)}}
-                max_data = c{CHAINx{$reverse(h01)}}
+                max_data = c{CHAINx{h01}}
                 
                 if(max.busy != 1) {
                     state.d = States.SEND_INTENSITY
