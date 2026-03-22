@@ -3,7 +3,7 @@ testbench test_serial {
     sig rst
     
     .clk(clk), .rst(rst) {
-        max7219_serial serial(#SPEED(1))
+        max7219_serial serial(#SPEED(2))
     }
 
     fun tick_clock() {
