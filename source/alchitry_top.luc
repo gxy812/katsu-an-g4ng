@@ -11,11 +11,11 @@ module alchitry_top (
     input io_dip [3][8]     // DIP switches on IO Shield
 ) {
     
-    const CHAIN = 1
+    const CHAIN = 8
     const W = CHAIN
     const SPEED = 5
     sig rst                  // reset signal
-    const TESTWORDS = {8x{{Wx{hAA}}}, 8x{{Wx{h66}}}}
+    const TESTWORDS = {8x{{hAAAAAAAA00000000}}, 8x{{hFFFFFFFF00000000}}}
     
     .clk(clk) {
         reset_conditioner reset_cond
@@ -41,10 +41,12 @@ module alchitry_top (
         io_select = 4h0 
         io_led = 3x{{h00}}
         
+        max7219_driver.new_ = 0
+        
         if (refresh_edge.out) {
             test_addr.d = ~test_addr.q
+            max7219_driver.new_ = 1
         }
-        max7219_driver.new_ = max7219_driver.done & refresh.value[-1]
         max7219_driver.segment_values = TESTWORDS[test_addr.q]
         
         // ------- DEBUG SIGNALS ------ // 

@@ -95,7 +95,7 @@ module max7219_driver #(
                 max_addr = c{CHAINx{$reverse(h0C)}}
                 max_data = c{CHAINx{h00}}
                 
-                if(max.busy != 1) { 
+                if(max.busy != 1) {
                     state.d = States.SEND_INTENSITY
                 }
     
@@ -105,7 +105,7 @@ module max7219_driver #(
                 max_addr = c{CHAINx{$reverse(h0A)}}
                 max_data = c{CHAINx{h00}}
                 
-                if(max.busy != 1) { 
+                if(max.busy != 1) {
                     state.d = States.SEND_NO_DECODE
                 }
                 
@@ -115,7 +115,7 @@ module max7219_driver #(
                 max_addr = c{CHAINx{$reverse(h0C)}}
                 max_data = c{CHAINx{h00}}
                 
-                if(max.busy != 1) { 
+                if(max.busy != 1) {
                     state.d = States.SEND_WORD
                 }
                 
@@ -125,7 +125,7 @@ module max7219_driver #(
                 max_addr = c{CHAINx{$reverse(h0F)}}
                 max_data = c{CHAINx{h01}} // loop here to test
                 
-                if(max.busy != 1) { 
+                if(max.busy != 1) {
                     state.d = States.SEND_OFF_DISPLAY_TEST
                 }
                 
