@@ -11,14 +11,22 @@ module alchitry_top (
     input io_dip [3][8]     // DIP switches on IO Shield
 ) {
     
-    const CHAIN = 4
+    const CHAIN = 1
     const W = CHAIN
-    const SPEED = 6
+    const SPEED = 5
     sig rst                  // reset signal
+    const TESTWORDS = {8x{{Wx{hAA}}}, 8x{{Wx{h66}}}}
     
-    max7219_driver max7219_driver(#CHAIN(CHAIN), #SPEED(SPEED), .clk(clk), .rst(rst)) 
-    reset_conditioner reset_cond(.clk(clk))
-    counter refresh(.clk(clk), .rst(rst), #DIV(8))
+    .clk(clk) {
+        reset_conditioner reset_cond
+        .rst(rst) {
+            max7219_driver max7219_driver(#CHAIN(CHAIN), #SPEED(SPEED)) 
+            counter refresh(#DIV(20))
+            dff test_addr(#INIT(0))
+        }
+        
+        edge_detector refresh_edge(#RISE(1), #FALL(0), .in(refresh.value[-1]))
+    }
     
     always {
         reset_cond.in = ~rst_n   // input raw inverted reset signal
@@ -31,19 +39,13 @@ module alchitry_top (
         
         io_segment = 8h00 
         io_select = 4h0 
-        io_led = 3x{{h00}} 
+        io_led = 3x{{h00}}
         
-        max7219_driver.new_ = max7219_driver.done & refresh.value[7]
-        max7219_driver.segment_values = {
-            Wx{hAA},
-            Wx{hAA},
-            Wx{hAA},
-            Wx{hAA},
-            Wx{hAA},
-            Wx{hAA},
-            Wx{hAA},
-            Wx{hAA}
+        if (refresh_edge.out) {
+            test_addr.d = ~test_addr.q
         }
+        max7219_driver.new_ = max7219_driver.done & refresh.value[-1]
+        max7219_driver.segment_values = TESTWORDS[test_addr.q]
         
         // ------- DEBUG SIGNALS ------ // 
         led = max7219_driver.debug_state
