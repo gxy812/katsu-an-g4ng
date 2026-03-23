@@ -12,10 +12,9 @@ module alchitry_top (
 ) {
     
     const CHAIN = 8
-    const W = CHAIN
     const SPEED = 5
     sig rst                  // reset signal
-    const TESTWORDS = {8x{{hAAAAAAAA00000000}}, 8x{{hFFFFFFFF00000000}}}
+    const TESTWORDS = {8x{{hABCDEF1200000000}}, 8x{{hFFFFFFFF00000000}}}
     
     .clk(clk) {
         reset_conditioner reset_cond
