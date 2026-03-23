@@ -1,23 +1,27 @@
 // expect 16 words
 // write one word at a time and update only the rows in the display that need updating
-module display_unit (
+module display_unit #(SPEED = 5 : SPEED > 0)(
     input clk,  // clock
     input rst,  // reset
     input waddr[4], // word address
     input wd[32],
-    input we // selector from some high bit of the 32-bit address from cpu
+    input we, // selector from some high bit of the 32-bit address from cpu
+    output dout[2],
+    output cs[2],
+    output sck[2]
 ) {
     enum States {
         IDLE, CHECK, STORE
     }
     .clk(clk) {
         .rst(rst) {
-            dff display_buf[16][32](#INIT(16x{{32h0}}))
+            dff display_buf[16][32](#INIT({4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}}))
             dff states[$width(States)](#INIT(States.IDLE))
-            dff new_buf[16](#INIT(0)) // indicator of which rows need updating
+            dff new_buf[16](#INIT(hFFFF)) // indicator of which rows need updating
             dff index[4](#INIT(0))
+            dff we_(#INIT(0))
             
-            #CHAIN(8), #SPEED(5) {
+            #CHAIN(8), #SPEED(SPEED) {
                 max7219_driver driver0
                 max7219_driver driver1
             }
@@ -25,11 +29,9 @@ module display_unit (
     }
     sig addr[3]
     always {
-        addr = waddr[2:0]
-        if (we) {
-            new_buf.d[waddr] = 1
-        }
-        display_buf.d[waddr] = wd
+        addr = index.q[2:0]
+        
+        we_.d = we
         driver0.new_ = 0
         driver0.addr = 0
         driver0.segment_values = 0
@@ -37,32 +39,42 @@ module display_unit (
         driver1.addr = 0
         driver1.segment_values = 0
         
+        dout = c{driver1.max7219_data, driver0.max7219_data}
+        cs = c{driver1.max7219_load, driver0.max7219_load}
+        sck = c{driver1.max7219_clock, driver0.max7219_clock}
+        
+        if (we_.q) {
+            new_buf.d[waddr] = 1
+            display_buf.d[waddr] = wd
+        }
         case (states.q) {
             States.IDLE:
                 if (|new_buf.q) {
                     states.d = States.CHECK
                 }
             States.CHECK:
-                index.d = index.q + 1
                 new_buf.d[index.q] = 0
                 if (new_buf.q[index.q]) {
                     states.d = States.STORE
+                } else {
+                    index.d = index.q + 1
                 }
             States.STORE:
-                if (~waddr[3]) {
-                    driver0.new_ = 1
-                    driver0.addr = addr
-                    // FIXME: janky workaround by padding zeros to ensure
-                    // data corruption contained within lower half and outside of display
+                driver0.addr = addr
+                if (~index.q) {
                     driver0.segment_values = c{display_buf.q[index.q], 32h0}
-                } else {
-                    driver1.new_ = 1
-                    driver1.addr = addr
+                }
+                driver1.addr = addr
+                if (index.q) {
                     driver1.segment_values = c{display_buf.q[index.q], 32h0}
                 }
+                
+                driver0.new_ = ~index.q[3]
+                driver1.new_ = index.q[3]
                 if (driver0.done & driver1.done) {
                     states.d = States.IDLE
                 }
         }
+        
     }
 }

@@ -74,9 +74,7 @@ module max7219_driver #(
         
         debug_driver_state = 0
         
-        if (new_) {
-            digit_index.d = addr
-        }
+        digit_index.d = addr
         // reverse should not be used with non constant
         current_digit_address = c{CHAINx{DIGIT_ADDRESS[digit_index.q[2:0]]}} //MAX 7219 starts from DIGIT reg address 1, not 0
         current_segment_values = segment_values
