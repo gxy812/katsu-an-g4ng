@@ -5,7 +5,7 @@ module max7219_driver #(
     input clk,  // clock
     input rst,  // reset
     input new_,
-    input segment_values[8][8*CHAIN], // 8x8*CHAIN LED matrix values, off or on each pixel, assume already reversed
+    input segment_values[8][8*CHAIN], // 8x8*CHAIN LED matrix values, off or on each pixel
     output done,
     output max7219_load, 
     output max7219_data,
@@ -30,17 +30,17 @@ module max7219_driver #(
     sig current_segment_values[8*CHAIN]
     
     enum States {
-        INITIALIZE, // wait until max7219 is ready
-        IDLE, //  wait for new input 
-        SEND_INITIAL_SHUTDOWN, // shut every pixel down and go to no decode and set scan to ALL digits
-        SEND_INTENSITY, // set led intensity
-        SEND_SHUTDOWN, // shut every pixel down
-        SEND_DISPLAY_TEST, // test all LED flash, dont use this on prod
-        SEND_OFF_DISPLAY_TEST, // off flashing of LED, dont use this in prod
-        SEND_NO_DECODE, // turn off decode reg and set each digit directly
-        SEND_SCAN_ALL_DIGITS, // scanline register to switch on all rows (digits)
-        SEND_WORD, // write 8 digits of data to DIGIT register
-        SEND_TURN_ON  // turn it on again to show the latest update
+        INITIALIZE,             // wait until max7219 is ready
+        IDLE,                   // wait for new input 
+        SEND_INITIAL_SHUTDOWN,  // shut every pixel down and go to no decode and set scan to ALL digits
+        SEND_INTENSITY,         // set led intensity
+        SEND_SHUTDOWN,          // shut every pixel down
+        SEND_DISPLAY_TEST,      // test all LED flash, dont use this on prod
+        SEND_OFF_DISPLAY_TEST,  // off flashing of LED, dont use this in prod
+        SEND_NO_DECODE,         // turn off decode reg and set each digit directly
+        SEND_SCAN_ALL_DIGITS,   // scanline register to switch on all rows (digits)
+        SEND_WORD,              // write 8 digits of data to DIGIT register
+        SEND_TURN_ON            // turn it on again to show the latest update
     }
     
     .clk(clk) {
