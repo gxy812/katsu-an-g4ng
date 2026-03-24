@@ -1,65 +1,41 @@
 module alchitry_top (
     input clk,              // 100MHz clock
     input rst_n,            // reset button (active low)
-    output led [8],         // 8 user controllable LEDs
-    input usb_rx,           // USB->Serial input
-    output usb_tx,          // USB->Serial output
-    output io_led [3][8],   // LEDs on IO Shield
-    output io_segment[8],      // 7-segment LEDs on IO Shield
-    output io_select[4],      // Digit select on IO Shield
-    input io_button [5],    // 5 buttons on IO Shield
-    input io_dip [3][8]     // DIP switches on IO Shield
+    output led[8],          // 8 user controllable LEDs
+    input usb_rx,            // USB->Serial input
+    output usb_tx,           // USB->Serial output
+    output io_led[3][8],     // LEDs on IO Shield
+    output io_segment[8],        // 7-segment LEDs on IO Shield
+    output io_select[4],        // Digit select on IO Shield
+    input io_button[5],      // 5 buttons on IO Shield
+    input io_dip[3][8]       // DIP switches on IO Shield
 ) {
     
-    const CHAIN = 8
-    const SPEED = 5
-    sig rst                  // reset signal
-    const TESTWORDS = {hABCDEF12, hFFFFFFFF, h91380753}
+    sig rst                 // reset signal
     
     .clk(clk) {
+        // The reset conditioner is used to synchronize the reset signal to the FPGA
+        // clock. This ensures the entire FPGA comes out of reset at the same time.
         reset_conditioner reset_cond
-        .rst(rst) {
-            display_unit display_unit
-            counter refresh(#DIV(20))
-            dff test_addr[2](#INIT(0))
-            dff digit_addr[3](#INIT(0))
-        }
-        
-        edge_detector refresh_edge(#RISE(1), #FALL(0), .in(refresh.value[-1]))
     }
+    const CLK_FREQ = $is_sim() ? 1000 : 100000000 // put 1000 for sim, 100000000 otherwise in hardware
     
+    tester_manual_beta tester_manual_beta(.clk(clk), .rst(rst), .io_button(io_button), .io_dip(io_dip), #CLK_FREQ(CLK_FREQ))
+ 
     always {
-        reset_cond.in = ~rst_n   // input raw inverted reset signal
-        rst = reset_cond.out     // conditioned reset
+        reset_cond.in = ~rst_n  // input raw inverted reset signal
+        rst = reset_cond.out    // conditioned reset
         
-        led = c{3b0, io_button}  // connect buttons to LEDs
+        led = 8h00             // turn LEDs off
         
         usb_tx = usb_rx          // loop serial port
         
-        display_unit.wd = TESTWORDS[test_addr.q]
-        display_unit.we = 1
-        display_unit.waddr = digit_addr.q
-        
-        if (refresh_edge.out) {
-            test_addr.d = test_addr.q + 1
-            digit_addr.d = digit_addr.q + 1
-            if (test_addr.q == 3) {
-                test_addr.d = 1
-            }
-        }
-        
-        
-        io_segment = 8h00 
-        io_select = 4h0 
-        io_led = 3x{{h00}}
-        
-        
-        
-        
-        // actual output
-        io_segment[4] = display_unit.dout // A45 
-        io_segment[3] = display_unit.cs // A46
-        io_segment[1] = display_unit.sck // A6
-        
+
+        io_led = tester_manual_beta.io_led
+        io_segment = tester_manual_beta.io_segment
+        io_select = tester_manual_beta.io_select
+        led = tester_manual_beta.led
+
+
     }
 }
