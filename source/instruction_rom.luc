@@ -7,13 +7,15 @@ output numinstr[10]
 ) {
     
     // Driver code, the bottommost instruction is the first instruction
-    // CHECKOFF: write your own test instruction fulfilling the requirements written in the lab handout
     const INSTRUCTIONS = {
-        32h7BE3FFFB, // 0x010 BNE(R3, main, R31) 
-        32h607F0020, // 0x00C LD(R31, 32, R3) 
-        32h643F0020, // 0x008 ST(R1, 32, R31)
-        32h90410800, // 0x004 CMPEQ(R1, R1, R2) 
-        32hC03F0003 // 0x000 ADDC(R31, 3, R1) --- main
+        // should execute 23 instructions
+        32h7BE1FFFB, // 0x018 BNE(R3, 0x00C, R31) -- expect pcsel_out to be 0x
+        32hE03B000F, // 0x014 ANDC(bp, 0xF, r1)
+        32hC77B0004, // 0x010 SUBC(bp, 4, bp) -- expect wdsel_out to be from 0x3C to 0x30
+        32h605F0010, // 0x00C LD(R31, 0x10, R2) -- expect mrd = interrupt value
+        32h641B0000, // 0x008 loop: ST(R0, 0, bp) -- expect asel_out = 0x6AE7
+        32hC01F6AE7, // 0x004 ADDC(R31, 0x6AE7, R0) -- display value
+        32hC37F0040  // 0x000 ADDC(R31, 0x40, BP) -- expect asel_out = 0, bsel_out = 0x40
     }
     
     const NUM_OF_INSTRUCTIONS = $width(INSTRUCTIONS,0) // compute how many instructions are there
