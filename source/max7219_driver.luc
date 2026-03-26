@@ -7,7 +7,7 @@ module max7219_driver #(
     input rst,  // reset
     input new_,
     input addr[3],
-    input segment_values[8*CHAIN], // 8x8*CHAIN LED matrix values, off or on each pixel
+    input segment_values[4*CHAIN], // 8x8*CHAIN LED matrix values, off or on each pixel
     output done,
     output max7219_load,
     output max7219_data,
@@ -26,8 +26,8 @@ module max7219_driver #(
     output debug_digit_index_original[8]
 ) {
 
-    sig max_addr[8*CHAIN]
-    sig max_data[8*CHAIN]
+    sig max_addr[4*CHAIN]
+    sig max_data[4*CHAIN]
     sig current_digit_address[8*CHAIN]
     sig current_segment_values[8*CHAIN]
     
