@@ -84,8 +84,8 @@ OP_NAMES = {
 REG_ALIAS = {27: 'BP', 28: 'LP', 29: 'SP', 30: 'XP', 31: 'ZR'}
 
 # board layout 
-BOARD_ROWS  = 32
-BOARD_COLS  = 16
+BOARD_ROWS  = 16
+BOARD_COLS  = 32
 BOARD_LABEL = 'TETRIS_BOARD'    # data label looked up at runtime
 
 # arithmetic helpers 
@@ -417,8 +417,8 @@ def _draw_board(win, sim: BetaSim, term_row: int, term_col: int) -> int:
         x += len(label_str)
 
         for c in range(BOARD_COLS):
-            cell_addr = base + (r * BOARD_COLS + c) * 4
-            val       = sim.read32(cell_addr)
+            cell_addr = base + r * 4
+            val       = sim.read32(cell_addr) & (1 << c)
             is_wall   = (c == 0 or c == BOARD_COLS - 1)
 
             if is_wall:
