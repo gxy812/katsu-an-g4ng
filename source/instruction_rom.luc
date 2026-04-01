@@ -8,15 +8,14 @@ output numinstr[10]
     
     // Driver code, the bottommost instruction is the first instruction
     const INSTRUCTIONS = {
-    // should run forever
-        32h6FE20000, // 0x01C JMP(R2, R31)           -- expect pcsel to be 2 (ALU), pcsel_out = 0x04
-        32hC05F0000, // 0x018 ADDC(R31, 0, R2)       -- target address for JMP
-        32h00000000, // 0x014 HALT()                 -- halt if no branch
-        32h7BE10001, // 0x010 BNE(R1, 0x018, R31)    -- expect pcsel to be 1 (Branch), pcsel_out = 0x8..10
-        32h603B0000, // 0x00C LD(BP, 0, R1)          -- expect wdsel to be 2 (Mem), wdsel_out = 0x80
-        32h641B0000, // 0x008 ST(R0, 0, BP)          -- expect wr to be 1, mem addr to be 0x40
-        32h801BD800, // 0x004 ADD(BP, BP, R0)        -- expect bsel to be 0 (Reg), bsel_out = 0x40
-        32hC37F0040  // 0x000 ADDC(R31, 0x40, BP)    -- expect bsel to be 1 (Const), bsel_out = 0x40
+        32h7BE3FFFB, // 0x01C BNE(R3, 0x00C, R31)
+        32hC4630004, // 0x018 SUBC(R3, 4, R3) -- r3 -= 4
+        32h08000001, // 0x014 ROLC(R0, 1, R0)
+        32h64020000, // 0x010 ST(R0, 0, R2) -- write r0 to [r2] which is the display's address
+        32h8043D800, // 0x00C ADD(R3, BP, R2) -- r2 = r3 + bp
+        32hC07F0070, // 0x008 ADDC(R31, 0x70, R3) -- r3 = 7*4*4 -> 4 full loops
+        32hC01F6AE7, // 0x004 ADDC(R31, 0x6AE7, R0) -- display value
+        32hC37F8000  // 0x000 ADDC(R31, -2^16, BP) --- main
     }
     
     const NUM_OF_INSTRUCTIONS = $width(INSTRUCTIONS,0) // compute how many instructions are there
