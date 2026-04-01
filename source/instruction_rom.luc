@@ -9,13 +9,13 @@ output numinstr[10]
     // Driver code, the bottommost instruction is the first instruction
     const INSTRUCTIONS = {
     // should run forever
-        32h83FF2000, // 0x01C JMP(R4, R31)           -- expect pcsel to be 2 (ALU), pcsel_out = 0x04
-        32hC09F0000, // 0x018 ADDC(R31, 0, R4)       -- target address for JMP
+        32h6FE20000, // 0x01C JMP(R2, R31)           -- expect pcsel to be 2 (ALU), pcsel_out = 0x04
+        32hC05F0000, // 0x018 ADDC(R31, 0, R2)       -- target address for JMP
         32h00000000, // 0x014 HALT()                 -- halt if no branch
         32h7BE10001, // 0x010 BNE(R1, 0x018, R31)    -- expect pcsel to be 1 (Branch), pcsel_out = 0x8..10
         32h603B0000, // 0x00C LD(BP, 0, R1)          -- expect wdsel to be 2 (Mem), wdsel_out = 0x80
         32h641B0000, // 0x008 ST(R0, 0, BP)          -- expect wr to be 1, mem addr to be 0x40
-        32h839B3800, // 0x004 ADD(BP, BP, R0)        -- expect bsel to be 0 (Reg), bsel_out = 0x40
+        32h801BD800, // 0x004 ADD(BP, BP, R0)        -- expect bsel to be 0 (Reg), bsel_out = 0x40
         32hC37F0040  // 0x000 ADDC(R31, 0x40, BP)    -- expect bsel to be 1 (Const), bsel_out = 0x40
     }
     
