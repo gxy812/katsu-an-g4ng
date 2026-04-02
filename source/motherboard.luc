@@ -43,21 +43,7 @@ module motherboard (
         beta.irq = |i_r_qt // IRQ as long as any of of the buttons[2:0] is pressed
         // store the button press to input buffer 
         if (|i_r_qt){
-            if (i_r_qt[0]){
-                system_input_buffer.d = 32hB0
-            }
-            else if (i_r_qt[1]){
-                system_input_buffer.d = 32hB1
-            }
-            else if (i_r_qt[2]){
-                system_input_buffer.d = 32hB2
-            }
-            else if (i_r_qt[3]){
-                system_input_buffer.d = 32hB3
-            }
-            else if (i_r_qt[4]){
-                system_input_buffer.d = 32hB4
-            }
+            system_input_buffer.d = i_r_qt
         }
         
         beta.slowclk = slowclk 
