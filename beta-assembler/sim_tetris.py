@@ -84,8 +84,8 @@ OP_NAMES = {
 REG_ALIAS = {27: 'BP', 28: 'LP', 29: 'SP', 30: 'XP', 31: 'ZR'}
 
 # board layout 
-BOARD_ROWS  = 16
-BOARD_COLS  = 32
+BOARD_ROWS  = 32
+BOARD_COLS  = 16
 BOARD_LABEL = 'TETRIS_BOARD'    # data label looked up at runtime
 
 # arithmetic helpers 
@@ -407,7 +407,7 @@ def _draw_board(win, sim: BetaSim, term_row: int, term_col: int) -> int:
     _put(win, term_row, term_col, hdr, curses.color_pair(CP_HDR))
     term_row += 1
 
-    for r in range(BOARD_ROWS):
+    for r in reversed(range(BOARD_ROWS)):
         if term_row >= H - 1:
             break
         x = term_col
@@ -417,14 +417,14 @@ def _draw_board(win, sim: BetaSim, term_row: int, term_col: int) -> int:
         x += len(label_str)
 
         for c in range(BOARD_COLS):
-            cell_addr = base + r * 4
-            val       = sim.read32(cell_addr) & (1 << c)
+            cell_addr = base + c * 4
+            val       = sim.read32(cell_addr) & (1 << r)
             is_wall   = (c == 0 or c == BOARD_COLS - 1)
 
-            if is_wall:
-                _put(win, term_row, x, GLYPH_WALL,
-                     curses.color_pair(CP_WALL) | curses.A_BOLD)
-            elif val:
+            # if is_wall:
+            #     _put(win, term_row, x, GLYPH_WALL,
+            #          curses.color_pair(CP_WALL) | curses.A_BOLD)
+            if val:
                 _put(win, term_row, x, GLYPH_FILL,
                      curses.color_pair(CP_FILL) | curses.A_BOLD)
             else:
