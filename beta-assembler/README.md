@@ -13,9 +13,12 @@ beta-assembler/
 ├── beta_32.py            # Beta ISA definition: instruction encoders, register names
 ├── helper_functions.py   # Number parsing, two's complement, hex/bin conversion
 ├── shunting_yard.py      # Expression evaluator (handles labels, arithmetic in .uasm)
+├── sim_tetris.py         # Interactive Beta CPU simulator (Tetris board renderer)
 └── files/
     ├── game.uasm         # Peg solitaire game instruction memory
     ├── game_data.uasm    # Peg solitaire game data memory
+    ├── tetris.uasm       # Tetris demo instruction memory
+    ├── tetris_data.uasm  # Tetris demo data memory (TETRIS_BOARD at 0x2600)
     └── test*.uasm        # Various test programs
 ```
 
@@ -51,8 +54,8 @@ python assembler_wrapper.py files/game -x    # hex output
 Output files are written alongside the input:
 
 ```
-files/game.bin/hex         # assembled instruction memory
-files/game_data.bin/hex    # assembled data memory
+files/game.bin         # assembled instruction memory
+files/game_data.bin    # assembled data memory
 ```
 
 The hex dump is written in **reverse address order** (lowest address at the bottom). This matches the Lucid memory initialisation format on the Alchitry AU.
@@ -125,6 +128,58 @@ The ISA is defined in `beta_32.py` as Python lambda functions. All instruction e
 **Custom instructions:** `RAND` (opcode `0x03`) and `NOP` (opcode `0x02`) are non-standard extensions. The datapath must implement them — modify as needed for your design.
 
 **Labels** must always be placed on their own line. A label followed by an instruction on the same line will not be parsed correctly. See `files/test.uasm` and `files/test_data.uasm` for working examples.
+
+## `LD` as 2 instructions
+
+Any `LD` instruction is automatically written twice. This is to take into account that instruction read is synchronous when implemented on FPGA. See [this](https://natalieagus.github.io/50002/fpga/beta-assembler) guide for more explanation.
+
+## `sim_tetris.py` Tetris Board Simulator
+
+Assembles and executes `files/tetris.uasm` + `files/tetris_data.uasm`, rendering the board stored at the `TETRIS_BOARD` data label in real time.
+
+```bash
+cd beta-assembler
+python sim_tetris.py files/tetris
+```
+
+**Board layout:**
+
+- 22 rows × 12 columns
+- Each cell is one `LONG` (4 bytes, 32-bit little-endian) in data memory
+- Cell `(row, col)` is at byte address `TETRIS_BOARD + (row × 12 + col) × 4`
+- Column 0 and column 11 are permanent walls, pre-filled with `1` in `tetris_data.uasm`
+- A cell value of `1` renders as `[]` (green); `0` renders as empty; walls render as `##` (yellow)
+
+**Display:**
+
+- Board on the left (27 terminal columns wide)
+- All 32 registers on the right
+- Disassembly below, showing current PC and any breakpoints
+
+**Keys:**
+
+| Key | Action                                                |
+| --- | ----------------------------------------------------- |
+| `n` | Step one instruction                                  |
+| `r` | Run until breakpoint or HALT                          |
+| `b` | Toggle breakpoint at current PC                       |
+| `c` | Clear all breakpoints                                 |
+| `R` | Reset — PC back to 0, board restored to initial state |
+| `q` | Quit                                                  |
+
+**How the simulator uses the assembler:**
+
+`sim_tetris.py` calls `parse_asm_file()` from `assembler.py` directly. The `.uasm` source is assembled into a list of binary byte strings, which are then reconstructed into 32-bit instruction words and loaded into the simulator's instruction memory. The simulator executes those words as machine code and the source text is never read again after startup. Opcodes are resolved at runtime by encoding a dummy instruction for each operation using `beta_32.py` and extracting the 6-bit opcode field, so the simulator stays in sync with the ISA definition automatically.
+
+## tetris.uasm
+
+Demo program that places three pieces onto the board using `ST` instructions:
+
+- T-piece at rows 1–2, columns 4–6
+- I-piece (vertical) at rows 3–6, column 9
+- S-piece at rows 8–9, columns 4–6
+
+Each `ST(R1, TETRIS_BOARD, R2)` instruction computes the effective address as `TETRIS_BOARD + R2` and writes `R1` (value 1) to that 32-bit cell. `R2` holds the byte offset `(row × 12 + col) × 4`. After all stores complete, the program loops at `done:`.
 
 ## Notes
 
