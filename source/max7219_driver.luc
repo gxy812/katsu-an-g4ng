@@ -1,3 +1,4 @@
+// write to specific row based on display unit
 module max7219_driver #(
     CHAIN = 1: CHAIN > 0,
     SPEED = 4:  SPEED >= 4
@@ -5,9 +6,10 @@ module max7219_driver #(
     input clk,  // clock
     input rst,  // reset
     input new_,
-    input segment_values[8][8*CHAIN], // 8x8*CHAIN LED matrix values, off or on each pixel
+    input addr[3],
+    input segment_values[8*CHAIN], // 8x8*CHAIN LED matrix values, off or on each pixel
     output done,
-    output max7219_load, 
+    output max7219_load,
     output max7219_data,
     output max7219_clock,
     
@@ -72,20 +74,23 @@ module max7219_driver #(
         
         debug_driver_state = 0
         
+        if (new_) {
+            digit_index.d = addr
+        }
         // reverse should not be used with non constant
         current_digit_address = c{CHAINx{DIGIT_ADDRESS[digit_index.q[2:0]]}} //MAX 7219 starts from DIGIT reg address 1, not 0
-        current_segment_values = segment_values[digit_index.q[2:0]]
+        current_segment_values = segment_values
         
         debug_digit_index = current_digit_address 
         debug_digit_index_original = digit_index.q+1
         debug_segment_current = current_segment_values // is 0, reverse not working
-        debug_segment_original = segment_values[digit_index.q[2:0]]
+        debug_segment_original = segment_values
         
         done = 0 // not done unless we have reached IDLE
         
         case(state.q) {
             States.INITIALIZE:
-                // deliberate delay, for necessary init. You may skip this state. 
+                // deliberate delay, for necessary init. You may skip this state.
                 debug_driver_state = b0000
                 state.d = States.SEND_INITIAL_SHUTDOWN
                 
@@ -167,12 +172,7 @@ module max7219_driver #(
                 max_data = current_segment_values
                 
                 if(max.busy != 1) {
-                    // write to next digit reg address immediately since there's no other matrix in the chain
-                    digit_index.d = digit_index.q + 1
-                    
-                    if(&digit_index.q) { // have reached reg DIGIT address 8
-                        state.d = States.SEND_TURN_ON // all segments are written     
-                    }
+                    state.d = States.SEND_TURN_ON // line has been updated
                 }
                 
             States.SEND_TURN_ON:

@@ -19,7 +19,8 @@ module motherboard (
     // setup and instantiate memory unit and instruction ROM
     const MEMORY_SIZE = 32
     instruction_rom instruction_unit(#WORDS(MEMORY_SIZE))
-    memory_unit memory_unit(#WORDS(MEMORY_SIZE), .clk(clk)) 
+    memory_unit memory_unit(#WORDS(MEMORY_SIZE), .clk(clk))
+    display_unit display_unit(.clk(clk), .rst(rst))
     
     // prepare output buffer
     dff system_output_buffer[32](.clk(clk), .rst(rst)) // 32 bit beta output buffer, hardwired to always read memory_unit value at byte address 0xC
@@ -54,9 +55,15 @@ module motherboard (
         beta.mem_data_input = memory_unit.mrd
         memory_unit.ia = beta.ia[31:0] 
         memory_unit.wd = beta.mem_data_output 
-        memory_unit.we = beta.wr 
         memory_unit.waddr = beta.mem_data_address[31:0] 
-        memory_unit.raddr = beta.mem_data_address[31:0] 
+        memory_unit.raddr = beta.mem_data_address[31:0]
+        
+        // multiplex display and memory
+        memory_unit.we = beta.wr & ~beta.mem_data_address[31]
+        display_unit.we = beta.wr & beta.mem_data_address[31]
+        
+        display_unit.wd = beta.mem_data_output
+        display_unit.waddr = beta.mem_data_address[31:0]
         
         // turn off instruction loading
         memory_unit.instruction_we = b0

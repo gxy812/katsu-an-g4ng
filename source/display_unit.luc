@@ -1,0 +1,68 @@
+// expect 16 words
+// write one word at a time and update only the rows in the display that need updating
+module display_unit (
+    input clk,  // clock
+    input rst,  // reset
+    input waddr[4], // word address
+    input wd[32],
+    input we // selector from some high bit of the 32-bit address from cpu
+) {
+    enum States {
+        IDLE, CHECK, STORE
+    }
+    .clk(clk) {
+        .rst(rst) {
+            dff display_buf[16][32](#INIT(16x{{32h0}}))
+            dff states[$width(States)](#INIT(States.IDLE))
+            dff new_buf[16](#INIT(0)) // indicator of which rows need updating
+            dff index[4](#INIT(0))
+            
+            #CHAIN(8), #SPEED(5) {
+                max7219_driver driver0
+                max7219_driver driver1
+            }
+        }
+    }
+    sig addr[3]
+    always {
+        addr = waddr[2:0]
+        if (we) {
+            new_buf.d[waddr] = 1
+        }
+        display_buf.d[waddr] = wd
+        driver0.new_ = 0
+        driver0.addr = 0
+        driver0.segment_values = 0
+        driver1.new_ = 0
+        driver1.addr = 0
+        driver1.segment_values = 0
+        
+        case (states.q) {
+            States.IDLE:
+                if (|new_buf.q) {
+                    states.d = States.CHECK
+                }
+            States.CHECK:
+                index.d = index.q + 1
+                new_buf.d[index.q] = 0
+                if (new_buf.q[index.q]) {
+                    states.d = States.STORE
+                }
+            States.STORE:
+                if (~waddr[3]) {
+                    driver0.new_ = 1
+                    driver0.addr = addr
+                    // FIXME: janky workaround by padding zeros to ensure
+                    // data corruption contained within lower half and outside of display
+                    driver0.segment_values = c{display_buf.q[index.q], 32h0}
+                } else {
+                    driver1.new_ = 1
+                    driver1.addr = addr
+                    driver1.segment_values = c{display_buf.q[index.q], 32h0}
+                }
+                if (driver0.done & driver1.done) {
+                    states.d = States.IDLE
+                }
+        }
+    }
+}
