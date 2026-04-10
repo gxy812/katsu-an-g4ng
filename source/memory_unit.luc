@@ -21,8 +21,8 @@ module memory_unit #(
   ) {
 
   simple_ram instruction_memory(#WIDTH(32), #ENTRIES(WORDS), .clk(clk)); // can fit 32 * WORDS bits 
-  simple_dual_port_ram data_memory(#WIDTH(32), #ENTRIES(WORDS), .wclk(clk), .rclk(clk)); // can fit 32 * WORDS bits 
- 
+  simple_dual_port_ram data_memory(#WIDTH(32), #ENTRIES(WORDS), .wclk(clk), .rclk(clk)); // can fit 32 * WORDS bits
+    data_rom map_rom
   
   always {
 
@@ -37,6 +37,17 @@ module memory_unit #(
     data_memory.waddr = waddr[$clog2(WORDS)+2-1:2]; // memory_unit is word addressable in Lucid, ignore two LSB
     data_memory.write_data = wd;
     data_memory.write_enable = we;
+        
+        map_rom.addr = raddr[6:2]
+        
+        if (raddr >= 32h1000){
+            mrd = map_rom.out
+        }else{
+        mrd = data_memory.read_data
+        }
+        
+    
+        
     mrd = data_memory.read_data;
     
   }

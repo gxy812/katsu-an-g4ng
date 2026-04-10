@@ -278,6 +278,7 @@
             {
                 "file": {
                     "type": "DiskFile",
+<<<<<<< HEAD
                     "path": "source/max7219_driver.luc"
                 }
             },
@@ -297,6 +298,9 @@
                 "file": {
                     "type": "DiskFile",
                     "path": "source/display_unit.luc"
+=======
+                    "path": "source/data_rom.luc"
+>>>>>>> a5e7d66 (added datarom and the corresponding connections)
                 }
             }
         ],
