@@ -63,6 +63,8 @@ OP_JMP   = _op(beta.JMP(0, 31))
 OP_LD    = _op(beta.LD(0, 0, 1)[:4])   # LD is doubled; take first 4 bytes
 OP_ST    = _op(beta.ST(1, 0, 0)[:4])   # ST is doubled; take first 4 bytes
 OP_LDR   = _op(beta.LDR(4, 0))         # LDR(label, RC) with label=dot+4
+OP_ROL   = _op(beta.ROL  (0, 1, 2));   OP_ROLC  = _op(beta.ROLC (0, 1, 2));
+OP_ROR   = _op(beta.ROR  (0, 1, 2));   OP_RORC  = _op(beta.RORC (0, 1, 2));
 
 beta.dot = _dot_save                    # restore
 
@@ -79,6 +81,7 @@ OP_NAMES = {
     OP_NOP:'NOP',   OP_HALT:'HALT', OP_SVC:'SVC',      OP_RAND:'RAND',
     OP_BEQ:'BEQ',   OP_BNE:'BNE',  OP_JMP:'JMP',
     OP_LD:'LD',     OP_ST:'ST',    OP_LDR:'LDR',
+    OP_ROL:'ROL',   OP_ROLC:'ROLC', OP_ROR:'ROR', OP_RORC:'RORC'
 }
 
 REG_ALIAS = {27: 'BP', 28: 'LP', 29: 'SP', 30: 'XP', 31: 'ZR'}
@@ -224,6 +227,10 @@ class BetaSim:
         elif op == OP_CMPLT:  self.rset(rc, 1 if sext32(av) <  sext32(bv) else 0)
         elif op == OP_CMPLTC: self.rset(rc, 1 if sext32(av) <  lit        else 0)
         elif op == OP_RAND:   self.rset(0, random.randint(0, 0xFFFFFFFF))
+        elif op == OP_ROL:    self.rset(rc, u32(av) << (bv  & 0x1F) | u32(av) >> (32 - bv & 0x1F))
+        elif op == OP_ROLC:   self.rset(rc, u32(av) << (lit & 0x1F) | u32(av) >> (32 - lit & 0x1F))
+        elif op == OP_ROR:    self.rset(rc, u32(av) >> (bv  & 0x1F) | u32(av) << (32 - lit & 0x1F))
+        elif op == OP_RORC:   self.rset(rc, u32(av) >> (lit & 0x1F) | u32(av) << (32 - lit & 0x1F))
         elif op == OP_NOP:    pass
 
         # branches 
