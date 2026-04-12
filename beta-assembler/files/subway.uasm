@@ -1,13 +1,109 @@
-ADDC(R31, TETRIS_BOARD, BP)
-ADDC(R31, 0x6AE7, R0)
-ADDC(R31, 0x3C, R3)
-ADD(R3, BP, R2)
-ST(R0, 0, R2)
-SHLC(R0, 1, R0)
-SUBC(R3, 4, R3)
-CMPEQC(R3, -4, R5)
-BEQ(R5, 0x00C, R31)
+| register map
+| r0: return register - unused
+| r3: counter register for loops
+| r1-r7: number registers
+| r8-r15: address registers
+| r16-r26: reserved for state
+| TODO: insert IRQ handler, exception handler
+main:
+| need to slow down game by 0x0300_0000
+| could obtain this by REVADDC(r31, 0xC0, ..)
+| then just loop
+
+| render segment
+| r3: counter
+| r2: data
+| currently just writing data straight to display, no sprites involved
+| maybe draw sprites first so that the dead player seems to stop
+CMOVE(0x20, R3)
+render:
+SUBC(r3, 4, r3)
+LD(r3, map, r2)
+ST(r2, display1, r3)
+ST(r2, display2, r3)
+BT(r3, render)
+
+| collision segment
+| if index matches position, check if 1st bit is 1
+| otherwise continue looping
+CMOVE(0x20, R3)
+| Initialize position stores
+LD(r31, pos1, r5)
+SHRC(r5, 1, r5)
+LD(r31, pos2, r6)
+ANDC(r6, 7, r6) | compensate for player 2 being further away by masking out the offset of 8
+SHRC(r6, 1, r6)
+
+check_collision:
+SUBC(r3, 4, r3)
+LD(r3, map, r2)
+SHRC(r3, 1, r4)
+
+should_check_p1:
+CMPEQ(r4, r5, r1)
+BT(r1, check_p1)
+
+should_check_p2:
+CMPEQ(r4, r6, r1)
+BT(r1, check_p2)
+BR(check_flags)
+
+| check if collided, then write player state flags
+check_p1:
+ANDC(r2, 1, r1) | is the first bit of the row an obstacle?
+OR(r24, r1, r24)
+BR(should_check_p2)
+
+check_p2:
+ANDC(r2, 1, r1)
+OR(r25, r1, r25)
+
+| check for tie first
+check_flags:
+AND(r24, r25, r1)
+BT(r1, tie)
+BT(r24, p1_loss)
+BT(r25, p2_loss)
+BT(r3, check_collision) | no one has collided in the current column
+
+| scroller segment
+CMOVE(0x20, R3)
+rotate:
+SUBC(r3, 4, r3)
+LD(r3, map, r2)
+RORC(r2, 1, r2)
+ST(r2, map, r3)
+BT(r3, rotate)
+BR(main)
+
+
+tie:
+CMOVE(0x20, R3)
+tie_loop:
+SUBC(r3, 4, r3)
+CMOVE(0xFFFF, r2)
+ST(r2, display1, r3)
+ST(r2, display2, r3)
+BT(r3, tie_loop)
+BR(done)
+
+p1_loss:
+CMOVE(0x20, R3)
+p1_loss_loop:
+SUBC(r3, 4, r3)
+CMOVE(0xFFFF, r2)
+ST(r2, display1, r3)
+BT(r3, p1_loss_loop)
+BR(done)
+
+p2_loss:
+CMOVE(0x20, R3)
+p2_loss_loop:
+SUBC(r3, 4, r3)
+CMOVE(0xFFFF, r2)
+ST(r2, display2, r3)
+BT(r3, p2_loss_loop)
+BR(done)
 
 done:
 BR(done)
-
