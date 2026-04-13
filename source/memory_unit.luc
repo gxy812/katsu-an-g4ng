@@ -16,13 +16,15 @@ module memory_unit #(
     input ia[$clog2(WORDS)+2], // byte addressing expected
     input instruction_we,
     input instruction_wd[32],
-    output id[32]
-
+    output id[32],
+    
+    // for data rom initialization
+    output datarom_out[32]
   ) {
 
   simple_ram instruction_memory(#WIDTH(32), #ENTRIES(WORDS), .clk(clk)); // can fit 32 * WORDS bits 
   simple_dual_port_ram data_memory(#WIDTH(32), #ENTRIES(WORDS), .wclk(clk), .rclk(clk)); // can fit 32 * WORDS bits
-    data_rom map_rom
+  data_rom map_rom
   
   always {
 
@@ -38,17 +40,12 @@ module memory_unit #(
     data_memory.write_data = wd;
     data_memory.write_enable = we;
         
-        map_rom.addr = raddr[6:2]
-        
-        if (raddr >= 32h1000){
-            mrd = map_rom.out
-        }else{
-        mrd = data_memory.read_data
-        }
-        
-    
-        
-    mrd = data_memory.read_data;
+    map_rom.addr = raddr[6:2]
+    if (raddr >= 32h1000) {
+        mrd = map_rom.out;
+    } else {
+        mrd = data_memory.read_data;
+    }
     
   }
 }

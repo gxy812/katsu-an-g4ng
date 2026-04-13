@@ -83,8 +83,26 @@ module motherboard (
                 memory_unit.instruction_we = b1
                 memory_unit.ia = writer_counter.q<<2 // pad with two zeroes to make it byte addressable because memory_unit expects byte addresing ia
                 if ((writer_counter.q + 1) == MEMORY_SIZE){
-                    motherboard.d = MotherboardStates.RUN // wait one more clock cycle to allow the last instruction to be loaded before start execution
+                    motherboard.d = MotherboardStates.DATAROMLOAD // wait one more clock cycle to allow the last instruction to be loaded before start execution
                 }
+            
+            MotherboardStates.DATAROMLOAD:
+                beta.rst = 1;
+                writer_counter.d = writer_counter.q + 1;
+        
+                // Point memory_unit raddr to the ROM index
+                memory_unit.raddr = writer_counter.q << 2; 
+        
+                // Write the ROM output into the RAM at the "Current Map" offset (0x20)
+                memory_unit.waddr = (writer_counter.q << 2) + 32h20; 
+                memory_unit.wd = memory_unit.rom_out;
+                memory_unit.we = 1;
+        
+               // If we have finished loading the 8 words for the first map
+                if (writer_counter.q == 7){ 
+                    motherboard.d = MotherboardStates.RUN;
+                    }
+                
             
             MotherboardStates.RUN:
                 // only load output and update input at the the beginning of each "next" instruction cycle 
