@@ -1,0 +1,81 @@
+. = 0x0000
+reset_address:
+ALLOCATE(983)
+
+PUSH(R5)
+PUSH(R4)
+PUSH(R3)
+PUSH(R2)
+PUSH(R1)
+PUSH(R6)
+
+LD(irq_address, R6)
+ANDC(R6, 0b10000, R1)
+BNE(R1, reset_endsequence_address, R31)
+
+
+ANDC(R6, 0b00001, R1)
+BNE(R1, l1_address, R31)
+
+
+ANDC(R6, 0b00010, R1)
+BNE(R1, r1_address, R31)
+
+l2check_address:
+ANDC(R6, 0b00100, R1)
+BNE(R1, l2_address, R31)
+
+ANDC(R6, 0b01000, R1)
+BNE(R1, r2_address, R31)
+
+endsequence_address:
+POP(R6)
+POP(R1)
+POP(R2)
+POP(R3)
+POP(R4)
+POP(R5)
+DEALLOCATE(983)
+JMP(R30)
+
+reset_endsequence_address:
+POP(R6)
+POP(R1)
+POP(R2)
+POP(R3)
+POP(R4)
+POP(R5)
+DEALLOCATE(983)
+BEQ(R31,reset_address,R31)
+
+l1_address:
+LD(player1_address, R4)
+SUBC(R4, 2, R2)
+CMPLTC(R2, 0, R3)
+BNE(R3, l2check_address, R31)
+ST(R2, player1_address)
+BR(l2check_address)
+
+r1_address:
+LD(player1_address, R4)
+ADDC(R4, 2, R2)
+CMPLTC(R2, 8, R3)
+BEQ(R3, l2check_address, R31)
+ST(R2, player1_address)
+BR(l2check_address)
+
+l2_address:
+LD(player2_address, R5)
+SUBC(R5, 2, R2)
+CMPLTC(R2, 8, R3)
+BNE(R3, endsequence_address, R31)
+ST(R2, player2_address)
+BR(endsequence_address)
+
+r2_address:
+LD(player2_address, R5)
+ADDC(R5, 2, R2)
+CMPLTC(R2, 15, R3)
+BEQ(R3, endsequence_address, R31)
+ST(R2, player2_address)
+BR(endsequence_address)
