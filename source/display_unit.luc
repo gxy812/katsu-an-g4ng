@@ -21,7 +21,7 @@ module display_unit #(SPEED = 5 : SPEED > 0)(
             dff index[4](#INIT(0))
             dff we_(#INIT(0))
             
-            #CHAIN(8), #SPEED(SPEED) {
+            #CHAIN(4), #SPEED(SPEED) {
                 max7219_driver driver0
                 max7219_driver driver1
             }
@@ -61,11 +61,11 @@ module display_unit #(SPEED = 5 : SPEED > 0)(
                 }
             States.STORE:
                 driver0.addr = addr
-                if (~index.q) {
+                if (~index.q[3]) {
                     driver0.segment_values = display_buf.q[index.q]
                 }
                 driver1.addr = addr
-                if (index.q) {
+                if (index.q[3]) {
                     driver1.segment_values = display_buf.q[index.q]
                 }
                 
