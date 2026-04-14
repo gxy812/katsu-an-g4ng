@@ -11,14 +11,22 @@ module display_unit #(SPEED = 5 : SPEED > 0)(
     output sck[2]
 ) {
     enum States {
-        IDLE, CHECK, STORE
+        IDLE, CHECK, STORE, NEXT
     }
     .clk(clk) {
         .rst(rst) {
-            dff display_buf[16][32](#INIT({4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}}))
+            dff display_buf[16][32](#INIT(
+                    {
+                        4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55},
+                        4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55},
+                        4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55},
+                        4x{hAA}, 4x{h55}, 4x{hAA}, 4x{h55}
+                    }
+                )
+            )
             dff states[$width(States)](#INIT(States.IDLE))
-            dff new_buf[16](#INIT(hFFFF)) // indicator of which rows need updating
-            dff index[4](#INIT(0))
+            dff new_buf[8](#INIT(-1)) // indicator of which rows need updating
+            dff index[3](#INIT(0))
             dff we_(#INIT(0))
             
             #CHAIN(4), #SPEED(SPEED) {
@@ -44,7 +52,7 @@ module display_unit #(SPEED = 5 : SPEED > 0)(
         sck = c{driver1.max7219_clock, driver0.max7219_clock}
         
         if (we_.q) {
-            new_buf.d[waddr] = 1
+            new_buf.d[waddr[2:0]] = 1
             display_buf.d[waddr] = wd
         }
         case (states.q) {
@@ -53,27 +61,27 @@ module display_unit #(SPEED = 5 : SPEED > 0)(
                     states.d = States.CHECK
                 }
             States.CHECK:
-                new_buf.d[index.q] = 0
                 if (new_buf.q[index.q]) {
                     states.d = States.STORE
-                } else {
-                    index.d = index.q + 1
+                }
+                else {
+                    states.d = States.NEXT
                 }
             States.STORE:
                 driver0.addr = addr
-                if (~index.q[3]) {
-                    driver0.segment_values = display_buf.q[index.q]
-                }
+                driver0.segment_values = display_buf.q[index.q]
                 driver1.addr = addr
-                if (index.q[3]) {
-                    driver1.segment_values = display_buf.q[index.q]
-                }
+                driver1.segment_values = display_buf.q[c{1, index.q}]
                 
-                driver0.new_ = ~index.q[3]
-                driver1.new_ = index.q[3]
-                if (driver0.done & driver1.done) {
-                    states.d = States.IDLE
+                driver0.new_ = 1
+                driver1.new_ = 1
+                if (driver0.done && driver1.done) {
+                    states.d = States.NEXT
                 }
+            States.NEXT:
+                new_buf.d[index.q] = 0
+                index.d = index.q + 1
+                states.d = States.IDLE
         }
         
     }
