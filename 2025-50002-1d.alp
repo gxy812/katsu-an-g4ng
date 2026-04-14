@@ -206,6 +206,12 @@
             {
                 "file": {
                     "type": "DiskFile",
+                    "path": "source/memory_rom.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
                     "path": "source/regfile_memory.luc"
                 }
             },

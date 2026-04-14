@@ -1,0 +1,40 @@
+module memory_rom #(
+    WORDS = 16 // total instructions in this ROM
+)(
+    input addr[$clog2(WORDS)], // this ROM is WORD addressable
+    output out[32],
+output numinstr[10]
+) {
+    
+    // Driver code, the bottommost instruction is the first instruction
+    const MEMORY = {
+        // Map 4 (Addresses 24-31)
+    32hF3030300, 32hF3030300, 32h06666666, 32h06666666, 
+    32h31111100, 32h31111100, 32hD1121301, 32hD1121301,
+
+    // Map 3 (Addresses 16-23)
+    32h11111111, 32h11111111, 32h44444444, 32h44444444, 
+    32h44444444, 32h44444444, 32h11111111, 32h11111111,
+
+    // Map 2 (Addresses 8-15)
+    32h07077077, 32h07077077, 32h00700070, 32h00700070, 
+    32h70700070, 32h70700070, 32h770E0E07, 32h770E0E07,
+
+    // Map 1 (Addresses 0-7)
+        // EG. address 0 and 1 (32h10000007) represent the left most lane, lane 1 of map 1
+    32h00038000, 32h00038000, 32h01C00E00, 32h01C00E00, 
+    32h4E0000E0, 32h4E0000E0, 32h10000007, 32h10000007
+    }
+    
+    const NUM_OF_MEMORIES = $width(MEMORY,0) // compute how many instructions are there
+    
+    always {
+        if (addr < NUM_OF_MEMORIES){ // check if addr < number of instructions before slicing the array
+            out = MEMORY[addr]
+        }
+        else{
+            out = 0
+        }
+        numinstr = NUM_OF_MEMORIES
+    }
+}
