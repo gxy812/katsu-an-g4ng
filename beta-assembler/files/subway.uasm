@@ -9,11 +9,90 @@
 | r25: p2 loss
 | TODO: insert IRQ handler, exception handler
 BR(begin)
-BR(irq_handler)
-BR(exception_handler)
+BR(irq_handler, xp)
+BR(exception_handler, xp)
 irq_handler:
+ALLOCATE(48)
+
+PUSH(R5)
+PUSH(R4)
+PUSH(R3)
+PUSH(R2)
+PUSH(R1)
+PUSH(R6)
+
+LD(irq_address, R6)
+ANDC(R6, 0b10000, R1)
+BNE(R1, reset_endsequence_address, R31)
+
+ANDC(R6, 0b00001, R1)
+BNE(R1, l1_address, R31)
+
+ANDC(R6, 0b00010, R1)
+BNE(R1, r1_address, R31)
+
+l2check_address:
+ANDC(R6, 0b00100, R1)
+BNE(R1, l2_address, R31)
+
+ANDC(R6, 0b01000, R1)
+BNE(R1, r2_address, R31)
+
+endsequence_address:
+POP(R6)
+POP(R1)
+POP(R2)
+POP(R3)
+POP(R4)
+POP(R5)
+DEALLOCATE(48)
+JMP(xp)
+
+reset_endsequence_address:
+POP(R6)
+POP(R1)
+POP(R2)
+POP(R3)
+POP(R4)
+POP(R5)
+DEALLOCATE(48)
+BEQ(R31,reset_address,R31)
+
+l1_address:
+LD(pos1, R4)
+SUBC(R4, 2, R2)
+CMPLTC(R2, 0, R3)
+BNE(R3, l2check_address, R31)
+ST(R2, pos1)
+BR(l2check_address)
+
+r1_address:
+LD(pos1, R4)
+ADDC(R4, 2, R2)
+CMPLTC(R2, 8, R3)
+BEQ(R3, l2check_address, R31)
+ST(R2, pos1)
+BR(l2check_address)
+
+l2_address:
+LD(pos2, R5)
+SUBC(R5, 2, R2)
+CMPLTC(R2, 8, R3)
+BNE(R3, endsequence_address, R31)
+ST(R2, pos2)
+BR(endsequence_address)
+
+r2_address:
+LD(pos2, R5)
+ADDC(R5, 2, R2)
+CMPLTC(R2, 15, R3)
+BEQ(R3, endsequence_address, R31)
+ST(R2, pos2)
+BR(endsequence_address)
+
 exception_handler:
 BR(tie)
+
 begin:
 | draw start screen
 | probably also fetch from rom
@@ -25,6 +104,7 @@ LD(r31, pos2, r2)
 ANDC(r2, 7, r2)
 OR(r1, r2, r1)
 BF(r1, press_any_key)
+reset_address:
 | initialize positions, fetch map to map address
 CMOVE(0x20, r3)
 copy:
@@ -67,7 +147,7 @@ SHRC(r6, 1, r6)
 check_collision:
 SUBC(r3, 4, r3)
 LD(r3, map, r2)
-SHRC(r3, 1, r4)
+SHRC(r3, 3, r4)
 
 should_check_p1:
 CMPEQ(r4, r5, r1)

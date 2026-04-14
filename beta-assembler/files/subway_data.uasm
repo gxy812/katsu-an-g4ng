@@ -1,6 +1,9 @@
+. = 0x0C
+pos_led_out:
+irq_address:
 . = 0x14
 pos1:
-LONG(0)
+LONG(2)
 pos2:
 LONG(10)
 . = 0x20
