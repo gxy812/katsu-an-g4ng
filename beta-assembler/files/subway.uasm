@@ -7,13 +7,12 @@
 | r16: map pointer
 | r24: p1 loss
 | r25: p2 loss
-| TODO: insert IRQ handler, exception handler
 BR(begin)
-BR(irq_handler, xp)
 BR(exception_handler, xp)
+BR(irq_handler, xp)
+
 irq_handler:
 ALLOCATE(48)
-
 PUSH(R5)
 PUSH(R4)
 PUSH(R3)
@@ -24,17 +23,13 @@ PUSH(R6)
 LD(irq_address, R6)
 ANDC(R6, 0b10000, R1)
 BNE(R1, reset_endsequence_address, R31)
-
 ANDC(R6, 0b00001, R1)
 BNE(R1, l1_address, R31)
-
 ANDC(R6, 0b00010, R1)
 BNE(R1, r1_address, R31)
-
 l2check_address:
 ANDC(R6, 0b00100, R1)
 BNE(R1, l2_address, R31)
-
 ANDC(R6, 0b01000, R1)
 BNE(R1, r2_address, R31)
 
@@ -94,16 +89,8 @@ exception_handler:
 BR(tie)
 
 begin:
-| draw start screen
-| probably also fetch from rom
-
-| wait for player input
-press_any_key:
-LD(r31, pos1, r1)
-LD(r31, pos2, r2)
-ANDC(r2, 7, r2)
-OR(r1, r2, r1)
-BF(r1, press_any_key)
+CMOVE(reset_address, lp)
+JMP(lp)
 reset_address:
 | initialize positions, fetch map to map address
 CMOVE(0x20, r3)
@@ -115,22 +102,42 @@ LD(r8, stored_maps, r2)
 ST(r2, map, r3)
 BT(r3, copy)
 
+| draw start screen
+| probably also fetch from rom
+CMOVE(0x40, R3)
+render_start_screen:
+SUBC(r3, 4, r3)
+LD(r3, titlescreen, r2)
+ST(r2, display1, r3)
+BT(r3, render_start_screen)
+press_any_key:
+LD(r31, pos1, r1)
+LD(r31, pos2, r2)
+ANDC(r2, 7, r2)
+OR(r1, r2, r1)
+BF(r1, press_any_key)
+
 main:
 | need to slow down game by 0x0300_0000
 | could obtain this by REVADDC(r31, 0xC0, ..)
 | then just loop
+CMOVE(0x03, r3)
+SHLC(r3, 24, r3)
+wait:
+SUBC(r3, 1, r3)
+BT(r3, wait)
 
 | render segment
 | r3: counter
 | r2: data
 | currently just writing data straight to display, no sprites involved
 | maybe draw sprites first so that the dead player seems to stop
-CMOVE(0x20, R3)
-| R3 is dec 32
+CMOVE(0x20, R3) | R3 is dec 32
 render:
-SUBC(r3, 4, r3)
-| r3 is now 28, so that we load map data from byte 28 to 31 and so on
+SUBC(r3, 4, r3) | r3 is now 28, so that we load map data from byte 28 to 31 and so on
 LD(r3, map, r2)
+SHLC(r2, 8, r2) | throw the top 8 bits off
+SHRC(r2, 8, r2) | shift back
 LD(r3, sprite3, r4) | for display1
 OR(r2, r4, r5)
 ST(r5, display1, r3)
@@ -142,7 +149,6 @@ ST(r5, display2, r3)
 BT(r3, render)
 | If register r3 contains any value other than 0, prog jumps back to render label
 | Else if 0 then program will finish loading all map and sprite data to display and run game
-
 | collision segment
 | if index matches position, check if 1st bit is 1
 | otherwise continue looping
