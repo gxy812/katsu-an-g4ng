@@ -6,7 +6,7 @@ module max7219_serial #(
     input clk,  // clock
     input rst,  // reset
     input addr_in[8*CHAIN],
-    input din[4*CHAIN],
+    input din[8*CHAIN],
     input start,
     output cs,
     output dout,
@@ -28,11 +28,11 @@ module max7219_serial #(
             counter slowclock(#SIZE(30));
             dff state[$width(States)](#INIT(States.IDLE));
             dff address_write_pointer[$clog2(FULL_WIDTH)](#INIT(0));
-            dff data_write_pointer[$clog2(FULL_WIDTH/2)](#INIT(1));
-            dff data[FULL_WIDTH/2](#INIT(0));
+            dff data_write_pointer[$clog2(FULL_WIDTH)](#INIT(-1));
+            dff data[FULL_WIDTH](#INIT(0));
             dff addr[FULL_WIDTH](#INIT(0));
             dff load_state(#INIT(1)); 
-            dff chain[$clog2(CHAIN)](#INIT(1));
+            dff chain[$clog2(CHAIN)](#INIT(-1));
         }
         // transition fsm on falling edges so that dout is held during rising edge
         edge_detector slowclock_edge(#RISE(0), #FALL(1), .in(slowclock.value[SPEED]))
@@ -108,7 +108,7 @@ module max7219_serial #(
                 chain.d = chain.q - 1;
                 // proceed to the next set
                 state.d = States.TRANSFER_ADDR
-                if (chain.q == 4){
+                if (chain.q == 0){
                     // we have pumped all sets of 16 bits data to the chain, time to latch
                     state.d = States.WAIT_LATCH;
                 }

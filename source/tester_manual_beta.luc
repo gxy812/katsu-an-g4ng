@@ -54,7 +54,7 @@ module tester_manual_beta#(
         next_button_edge.in = next_button_conditioner.out
         
         // driving the beta 
-        slowclock_edge.in = frequency_divider.value[27]
+        slowclock_edge.in = frequency_divider.value[24]
         fastclock_edge.in = frequency_divider.value[8] // for simulation, because we work with 1000Hz clock
         
         // connect hardware interrupt button 
@@ -62,7 +62,7 @@ module tester_manual_beta#(
         interrupt_button_edge.in = interrupt_button_conditioner.out
         motherboard.irq = interrupt_button_edge.out // IRQ as long as any of of the buttons[2:0] is pressed
         
-        next = (slowclock_edge.out & io_dip[2][7]) | next_button_edge.out // proceed either when next button is pressed or io_dip[2][7] is 1
+        next = (slowclock_edge.out) | next_button_edge.out // proceed either when next button is pressed or io_dip[2][7] is 1
         
         if (io_dip[2][6]){ // want faster clock
             next = (fastclock_edge.out & io_dip[2][7]) | next_button_edge.out
@@ -150,5 +150,9 @@ module tester_manual_beta#(
         io_segment[4] = motherboard.dout[0]
         io_segment[3] = motherboard.cs[0]
         io_segment[1] = motherboard.sck[0]
+        
+        io_segment[2] = motherboard.dout[1]
+        io_segment[7] = motherboard.cs[1]
+        io_segment[5] = motherboard.sck[1]
     }
 }
