@@ -304,12 +304,6 @@
                     "type": "DiskFile",
                     "path": "source/display_unit.luc"
                 }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/data_rom.luc"
-                }
             }
         ],
         "constraintFiles": [

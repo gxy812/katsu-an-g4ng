@@ -20,7 +20,7 @@ module motherboard (
     beta_cpu beta(.clk(clk))
     
     // setup and instantiate memory unit and instruction ROM
-    const MEMORY_SIZE = 32
+    const MEMORY_SIZE = 256
     instruction_rom instruction_unit(#WORDS(MEMORY_SIZE))
     memory_unit memory_unit(#WORDS(MEMORY_SIZE), .clk(clk))
     display_unit display_unit(.clk(clk), .rst(rst))
@@ -112,7 +112,7 @@ module motherboard (
                 memoryrom.addr = memory_counter.q
                 memory_unit.we = b1
                 memory_unit.wd = memoryrom.out
-                memory_unit.raddr = memory_counter.q <<2
+                memory_unit.waddr = memory_counter.q <<2
                 if ((memory_counter.q +1)==MEMORY_SIZE){
                     motherboard.d = MotherboardStates.INSTRUCTIONLOAD
                 }

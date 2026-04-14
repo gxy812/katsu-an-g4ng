@@ -25,8 +25,8 @@ module tester_manual_beta#(
     edge_detector next_button_edge(#RISE(1), #FALL(0), .clk(clk))
     
     // interrupt button conditioners, edge detector, and input buffer
-    button_conditioner interrupt_button_conditioner[3](.clk(3x{clk}), #CLK_FREQ(3x{{$resize(CLK_FREQ,32)}})) 
-    edge_detector interrupt_button_edge[3](#RISE(3x{{1}}), #FALL(3x{{0}}), .clk(3x{clk}))
+    button_conditioner interrupt_button_conditioner[5](.clk(5x{clk}), #CLK_FREQ(5x{{$resize(CLK_FREQ,32)}})) 
+    edge_detector interrupt_button_edge[5](#RISE(5x{{1}}), #FALL(5x{{0}}), .clk(5x{clk}))
     
     // to run beta at slower clock than FPGA clock
     counter frequency_divider(#SIZE(28), .clk(clk), .rst(rst))
@@ -54,15 +54,17 @@ module tester_manual_beta#(
         next_button_edge.in = next_button_conditioner.out
         
         // driving the beta 
-        slowclock_edge.in = frequency_divider.value[24]
-        fastclock_edge.in = frequency_divider.value[8] // for simulation, because we work with 1000Hz clock
+        slowclock_edge.in = frequency_divider.value[3]
+        fastclock_edge.in = frequency_divider.value[3] // for simulation, because we work with 1000Hz clock
         
         // connect hardware interrupt button 
-        interrupt_button_conditioner.in = io_button[2:0]
+        interrupt_button_conditioner.in = c{
+            io_button[1], io_dip[0][0], io_dip[0][2], io_dip[0][4], io_dip[0][6]
+        }
         interrupt_button_edge.in = interrupt_button_conditioner.out
         motherboard.irq = interrupt_button_edge.out // IRQ as long as any of of the buttons[2:0] is pressed
         
-        next = (slowclock_edge.out) | next_button_edge.out // proceed either when next button is pressed or io_dip[2][7] is 1
+        next = (slowclock_edge.out & io_dip[2][7]) | next_button_edge.out // proceed either when next button is pressed or io_dip[2][7] is 1
         
         if (io_dip[2][6]){ // want faster clock
             next = (fastclock_edge.out & io_dip[2][7]) | next_button_edge.out
@@ -82,7 +84,7 @@ module tester_manual_beta#(
         debug_bsel = motherboard.debug[2]
         debug_wdsel = motherboard.debug[3]
         
-        case (io_dip[0]){
+        case (io_dip[1]){
             h00: // MSB 16 bits of current instruction (id[31:16])
                 io_led[0] = motherboard.id[23:16]
                 io_led[1] = motherboard.id[31:24]
