@@ -4,7 +4,37 @@
 | r1-r7: number registers
 | r8-r15: address registers
 | r16-r26: reserved for state
+| r16: map pointer
+| r24: p1 loss
+| r25: p2 loss
 | TODO: insert IRQ handler, exception handler
+BR(begin)
+BR(irq_handler)
+BR(exception_handler)
+irq_handler:
+exception_handler:
+BR(tie)
+begin:
+| draw start screen
+| probably also fetch from rom
+
+| wait for player input
+press_any_key:
+LD(r31, pos1, r1)
+LD(r31, pos2, r2)
+ANDC(r2, 7, r2)
+OR(r1, r2, r1)
+BF(r1, press_any_key)
+| initialize positions, fetch map to map address
+CMOVE(0x20, r3)
+copy:
+SUBC(r3, 4, r3)
+SHLC(r16, 4, r8)
+ADD(r8, r3, r8)
+LD(r8, stored_maps, r2)
+ST(r2, map, r3)
+BT(r3, copy)
+
 main:
 | need to slow down game by 0x0300_0000
 | could obtain this by REVADDC(r31, 0xC0, ..)
@@ -61,9 +91,8 @@ OR(r25, r1, r25)
 | check for tie first
 check_flags:
 AND(r24, r25, r1)
-BT(r1, tie)
-BT(r24, p1_loss)
-BT(r25, p2_loss)
+OR(r24, r25, r2)
+BT(r2, game_end)
 BT(r3, check_collision) | no one has collided in the current column
 
 | scroller segment
@@ -76,33 +105,37 @@ ST(r2, map, r3)
 BT(r3, rotate)
 BR(main)
 
+game_end:
+| initialise counter to write entire display
+CMOVE(0x20, R3)
+ADDC(r16, 1, r16)
+| if (p1 & p2)
+BT(r1, tie)
+| else if (p1)
+BT(r24, p1_loss)
+| else
+BR(p2_loss)
 
 tie:
-CMOVE(0x20, R3)
-tie_loop:
 SUBC(r3, 4, r3)
 CMOVE(0xFFFF, r2)
 ST(r2, display1, r3)
 ST(r2, display2, r3)
-BT(r3, tie_loop)
+BT(r3, tie)
 BR(done)
 
 p1_loss:
-CMOVE(0x20, R3)
-p1_loss_loop:
 SUBC(r3, 4, r3)
 CMOVE(0xFFFF, r2)
 ST(r2, display1, r3)
-BT(r3, p1_loss_loop)
+BT(r3, p1_loss)
 BR(done)
 
 p2_loss:
-CMOVE(0x20, R3)
-p2_loss_loop:
 SUBC(r3, 4, r3)
 CMOVE(0xFFFF, r2)
 ST(r2, display2, r3)
-BT(r3, p2_loss_loop)
+BT(r3, p2_loss)
 BR(done)
 
 done:
