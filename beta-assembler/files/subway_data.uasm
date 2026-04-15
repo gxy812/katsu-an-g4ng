@@ -1,6 +1,4 @@
-. = 0x0C
-pos_led_out:
-LONG(0)
+. = 0x10
 irq_address:
 LONG(0)
 . = 0x14

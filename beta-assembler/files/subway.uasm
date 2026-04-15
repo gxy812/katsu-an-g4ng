@@ -21,7 +21,7 @@ PUSH(R2)
 PUSH(R1)
 PUSH(R6)
 
-LD(0x10, R6)
+LD(irq_address, R6)
 ANDC(R6, 0b10000, R1)
 BNE(R1, reset_endsequence_address, R31)
 ANDC(R6, 0b00001, R1)
