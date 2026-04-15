@@ -156,5 +156,14 @@ module tester_manual_beta#(
         io_segment[2] = motherboard.dout[1]
         io_segment[7] = motherboard.cs[1]
         io_segment[5] = motherboard.sck[1]
+        
+        io_led[0][0] = motherboard.output_buffer[7]
+        io_led[0][1] = motherboard.output_buffer[6]
+        io_led[0][3] = motherboard.output_buffer[5]
+        io_led[0][5] = motherboard.output_buffer[4]
+        io_led[0][7] = motherboard.output_buffer[3]
+        io_led[1][1] = motherboard.output_buffer[2]
+        io_led[1][3] = motherboard.output_buffer[1]
+        io_led[1][5] = motherboard.output_buffer[0]
     }
 }
