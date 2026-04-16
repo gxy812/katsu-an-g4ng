@@ -8,9 +8,13 @@
 | r23: sprite bit that toggles every iteration to cycle between frames
 | r24: p1 loss
 | r25: p2 loss
+. = 0x0
 BR(begin)
 BR(exception_handler)
 BR(irq_handler)
+
+display1 = 0xFFC0
+display2 = 0xFFE0
 
 irq_handler:
 ALLOCATE(48)
@@ -22,17 +26,18 @@ PUSH(R1)
 PUSH(R6)
 
 LD(irq_address, R6)
+ST(r31, irq_address)
 ANDC(R6, 0b10000, R1)
 BNE(R1, reset_endsequence_address, R31)
 ANDC(R6, 0b00001, R1)
-BNE(R1, l1_address, R31)
-ANDC(R6, 0b00010, R1)
 BNE(R1, r1_address, R31)
+ANDC(R6, 0b00010, R1)
+BNE(R1, l1_address, R31)
 l2check_address:
 ANDC(R6, 0b00100, R1)
-BNE(R1, l2_address, R31)
-ANDC(R6, 0b01000, R1)
 BNE(R1, r2_address, R31)
+ANDC(R6, 0b01000, R1)
+BNE(R1, l2_address, R31)
 
 endsequence_address:
 POP(R6)
@@ -52,7 +57,8 @@ POP(R3)
 POP(R4)
 POP(R5)
 DEALLOCATE(48)
-BEQ(R31,reset_address,R31)
+CMOVE(reset_address, lp)
+JMP(lp)
 
 l1_address:
 LD(pos1, R4)
@@ -89,20 +95,16 @@ BR(endsequence_address)
 exception_handler:
 BR(tie)
 
-begin:
-CMOVE(reset_address, lp)
-JMP(lp)
 reset_address:
-| initialize positions, fetch map to map address
-CMOVE(0x20, r3)
-copy:
-SUBC(r3, 4, r3)
-SHLC(r16, 4, r8)
-ADD(r8, r3, r8)
-LD(r8, stored_maps, r2)
-ST(r2, map, r3)
-BT(r3, copy)
+ST(r31, pos1)
+ST(r31, pos2)
+ADDC(r16, 1, r16)
 
+begin:
+CMOVE(begin_1, lp)
+JMP(lp) | clear supervisor
+
+begin_1:
 | draw start screen
 | probably also fetch from rom
 CMOVE(0x40, R3)
@@ -110,7 +112,9 @@ render_start_screen:
 SUBC(r3, 4, r3)
 LD(r3, titlescreen, r2)
 ST(r2, display1, r3)
+ST(r2, display1, r3)
 BT(r3, render_start_screen)
+
 press_any_key:
 LD(r31, pos1, r1)
 LD(r31, pos2, r2)
@@ -118,12 +122,31 @@ ANDC(r2, 7, r2)
 OR(r1, r2, r1)
 BF(r1, press_any_key)
 
+| initialize positions, fetch map to map address
+CMOVE(0, r24)
+CMOVE(0, r25)
+CMOVE(2, r1)
+ST(r1, pos1)
+CMOVE(10, r1)
+ST(r1, pos2)
+CMOVE(0, r1)
+
+CMOVE(0x20, r3)
+copy:
+SUBC(r3, 4, r3)
+SHLC(r16, 5, r8)
+ADD(r8, r3, r8)
+ANDC(r8, 0xFF, r8)
+LD(r8, stored_maps, r2)
+ST(r2, map, r3)
+BT(r3, copy)
+
 main:
 | need to slow down game by 0x0010_0000
 | could obtain this by REVADDC(r31, 0xC0, ..)
 | then just loop
 CMOVE(0x01, r3)
-SHLC(r3, 23, r3)
+SHLC(r3, 21, r3)
 wait:
 SUBC(r3, 1, r3)
 BT(r3, wait)
@@ -132,14 +155,14 @@ BT(r3, wait)
 XORC(r23, 1, r23)
 | select sprite: sprite 1 and 2 are normal state
 | sprite 3 and 4 are dead state
-| r23 should therefore be shifted by 4 to advance counter by 8
+| r23 should therefore be shifted by 5 to advance counter by 8
 | use the dead states of each player to compute which sprite should be selected
 | so r24 and r25 to be shifted by 5
 | store player sprite address in r14 and r15
-SHLC(r23, 4, r9)
-SHLC(r24, 5, r2) | r2 used temporarily
+SHLC(r23, 5, r9)
+SHLC(r24, 6, r2) | r2 used temporarily
 ADD(r9, r2, r14)
-SHLC(r25, 5, r2)
+SHLC(r25, 6, r2)
 ADD(r9, r2, r15)
 
 | render segment
@@ -151,34 +174,57 @@ CMOVE(0x20, R3) | R3 is dec 32
 render:
 SUBC(r3, 4, r3) | r3 is now 28, so that we load map data from byte 28 to 31 and so on
 LD(r3, map, r2)
-SHLC(r2, 8, r2) | throw the top 8 bits off
-SHRC(r2, 8, r2) | shift back
-ADD(r3, r15, r8)
+SHLC(r2, 10, r2) | throw the top 10 bits off
+SHRC(r2, 8, r2) | shift back, leaving gap of 2 at the bottom
+
+ADD(r3, r14, r8)
 LD(r8, sprite1, r4) | for display1
 OR(r2, r4, r5)
+
+| check if player 1 in current column
+SHRC(r3, 3, r1)
+LD(pos1, r4)
+SHRC(r4, 1, r4)
+CMPEQ(r1, r4, r4)
+OR(r5, r4, r5)
+
+| check if player 1 is dead
+BF(r24, write_display1)
+CMOVE(0xFFFF, r4)
+SHRC(r4, 8, r4)
+OR(r4, r5, r5)
+
+write_display1:
+ST(r5, display1, r3)
 ST(r5, display1, r3)
 
 ADD(r3, r15, r8)
 LD(r8, sprite1, r4) | for display2
 OR(r2, r4, r5)
+
+| check if player 2 in current column
+SHRC(r3, 3, r1)
+LD(pos2, r4)
+ANDC(r4, 7, r4) | mask out +8 offset
+SHRC(r4, 1, r4)
+CMPEQ(r1, r4, r4)
+OR(r5, r4, r5)
+
+| check if player 2 is dead
+BF(r25, write_display2)
+CMOVE(0xFFFF, r4)
+SHRC(r4, 8, r4)
+OR(r4, r5, r5)
+
+write_display2:
+ST(r5, display2, r3)
 ST(r5, display2, r3)
 
 BT(r3, render)
-
-| write player position to LED
-LD(pos1, r2)
-LD(pos2, r3)
-SHLC(r2, 1, r2)
-SHLC(r3, 1, r3)
-CMOVE(1, r1)
-SHL(r1, r2, r2) | convert number into 1 hot
-| i.e. player at position 2 will become 00..0100
-SHL(r1, r3, r3)
-OR(r2, r3, r2)
-ST(r2, 0xC, r31)
-
 | If register r3 contains any value other than 0, prog jumps back to render label
 | Else if 0 then program will finish loading all map and sprite data to display and run game
+
+
 | collision segment
 | if index matches position, check if 1st bit is 1
 | otherwise continue looping
@@ -216,8 +262,7 @@ OR(r25, r1, r25)
 
 | check for tie first
 check_flags:
-AND(r24, r25, r1)
-OR(r24, r25, r2)
+AND(r24, r25, r2)
 BT(r2, game_end)
 BT(r3, check_collision) | no one has collided in the current column
 
@@ -233,14 +278,7 @@ BR(main)
 
 game_end:
 | initialise counter to write entire display
-CMOVE(0x20, R3)
-ADDC(r16, 1, r16)
-| if (p1 & p2)
-BT(r1, tie)
-| else if (p1)
-BT(r24, p1_loss)
-| else
-BR(p2_loss)
+CMOVE(0x10, R3)
 
 tie:
 SUBC(r3, 4, r3)
@@ -249,23 +287,12 @@ SHRC(r2, 8, r2)
 ST(r2, display1, r3)
 ST(r2, display2, r3)
 BT(r3, tie)
-BR(done)
-
-p1_loss:
-SUBC(r3, 4, r3)
-CMOVE(0xFFFF, r2)
-SHRC(r2, 8, r2)
-ST(r2, display1, r3)
-BT(r3, p1_loss)
-BR(done)
-
-p2_loss:
-SUBC(r3, 4, r3)
-CMOVE(0xFFFF, r2)
-SHRC(r2, 8, r2)
-ST(r2, display2, r3)
-BT(r3, p2_loss)
-BR(done)
+BR(main)
 
 done:
-BR(done)
+CMOVE(0x01, r3)
+SHLC(r3, 16, r3)
+done_wait:
+SUBC(r3, 1, r3)
+BT(r3, done_wait)
+BR(begin)
