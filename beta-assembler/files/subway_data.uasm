@@ -1,12 +1,10 @@
 . = 0x10
 irq_address:
 LONG(0)
-. = 0x14
 pos1:
 LONG(2)
 pos2:
 LONG(8)
-. = 0x20
 titlescreen:
 LONG(0)
 LONG(0)
@@ -116,7 +114,6 @@ LONG(0x30000000)
 . = 0xFFC0
 
 TETRIS_BOARD:
-display1:
 LONG(0)
 LONG(0)
 LONG(0)
@@ -125,7 +122,6 @@ LONG(0)
 LONG(0)
 LONG(0)
 LONG(0)
-display2:
 LONG(0)
 LONG(0)
 LONG(0)
