@@ -146,7 +146,7 @@ main:
 | could obtain this by REVADDC(r31, 0xC0, ..)
 | then just loop
 CMOVE(0x01, r3)
-SHLC(r3, 22, r3)
+SHLC(r3, 21, r3)
 wait:
 SUBC(r3, 1, r3)
 BT(r3, wait)
@@ -188,6 +188,13 @@ SHRC(r4, 1, r4)
 CMPEQ(r1, r4, r4)
 OR(r5, r4, r5)
 
+| check if player 1 is dead
+BF(r24, write_display1)
+CMOVE(0xFFFF, r4)
+SHRC(r4, 8, r4)
+OR(r4, r5, r5)
+
+write_display1:
 ST(r5, display1, r3)
 ST(r5, display1, r3)
 
@@ -203,6 +210,13 @@ SHRC(r4, 1, r4)
 CMPEQ(r1, r4, r4)
 OR(r5, r4, r5)
 
+| check if player 2 is dead
+BF(r25, write_display2)
+CMOVE(0xFFFF, r4)
+SHRC(r4, 8, r4)
+OR(r4, r5, r5)
+
+write_display2:
 ST(r5, display2, r3)
 ST(r5, display2, r3)
 
@@ -248,8 +262,7 @@ OR(r25, r1, r25)
 
 | check for tie first
 check_flags:
-AND(r24, r25, r1)
-OR(r24, r25, r2)
+AND(r24, r25, r2)
 BT(r2, game_end)
 BT(r3, check_collision) | no one has collided in the current column
 
@@ -265,14 +278,7 @@ BR(main)
 
 game_end:
 | initialise counter to write entire display
-CMOVE(0x20, R3)
-ADDC(r16, 1, r16)
-| if (p1 & p2)
-BT(r1, tie)
-| else if (p1)
-BT(r24, p1_loss)
-| else
-BR(p2_loss)
+CMOVE(0x10, R3)
 
 tie:
 SUBC(r3, 4, r3)
@@ -283,25 +289,9 @@ ST(r2, display2, r3)
 BT(r3, tie)
 BR(main)
 
-p1_loss:
-SUBC(r3, 4, r3)
-CMOVE(0xFFFF, r2)
-SHRC(r2, 8, r2)
-ST(r2, display1, r3)
-BT(r3, p1_loss)
-BR(main)
-
-p2_loss:
-SUBC(r3, 4, r3)
-CMOVE(0xFFFF, r2)
-SHRC(r2, 8, r2)
-ST(r2, display2, r3)
-BT(r3, p2_loss)
-BR(main)
-
 done:
 CMOVE(0x01, r3)
-SHLC(r3, 24, r3)
+SHLC(r3, 16, r3)
 done_wait:
 SUBC(r3, 1, r3)
 BT(r3, done_wait)
