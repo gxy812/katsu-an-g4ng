@@ -38,6 +38,8 @@ module display_unit #(SPEED = 5 : SPEED > 0)(
     sig addr[3]
     always {
         addr = index.q[2:0]
+        display_buf.d = display_buf.q
+        new_buf.d = new_buf.q
         
         we_.d = we
         driver0.new_ = 0

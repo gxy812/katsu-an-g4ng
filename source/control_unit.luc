@@ -123,6 +123,7 @@ module control_unit (
         werf = b1
         wdsel = b00
         wr = b0
+        irq_sampler.d = 0
     }    
     
     // force wr = 0 when reset == 1 

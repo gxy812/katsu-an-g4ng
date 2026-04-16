@@ -9,7 +9,6 @@ module alu (
 ) {
     .a(a), .b(b) {
         adder adder(#SIZE(32), .alufn0(alufn))
-        multiplier mul
         .alufn(alufn) {
             boolean bool
             shifter shift
@@ -21,12 +20,7 @@ module alu (
     abs abs(.in(addmul))
     reverse rev(.in(addmul))
     always {
-        if (alufn[1]) {
-            addmul = mul.mul
-        }
-        else {
-            addmul = adder.s
-        }
+        addmul = adder.s
         z = adder.z
         v = adder.v
         n = adder.n

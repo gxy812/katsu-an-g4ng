@@ -54,7 +54,7 @@ module tester_manual_beta#(
         next_button_edge.in = next_button_conditioner.out
         
         // driving the beta 
-        slowclock_edge.in = frequency_divider.value[3]
+        slowclock_edge.in = frequency_divider.value[15]
         fastclock_edge.in = frequency_divider.value[3] // for simulation, because we work with 1000Hz clock
         
         // connect hardware interrupt button 

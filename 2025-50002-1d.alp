@@ -146,18 +146,6 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/alu/multiplier.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/alu/test_multiplier.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
                     "path": "source/alu/rotater.luc"
                 }
             },

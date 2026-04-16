@@ -65,7 +65,7 @@ module motherboard (
         memory_unit.raddr = beta.mem_data_address[31:0]
         
         // multiplex display and memory
-        memory_unit.we = beta.wr & ~beta.mem_data_address[31]
+        memory_unit.we = beta.wr
         display_unit.we = beta.wr & beta.mem_data_address[31]
         
         display_unit.wd = beta.mem_data_output
@@ -73,10 +73,7 @@ module motherboard (
         
         // turn off instruction loading
         memory_unit.instruction_we = b0
-        memory_unit.instruction_wd = 32b0 
-        
-        memory_unit.we = b0
-        memory_unit.wd = 32b0
+        memory_unit.instruction_wd = 32b0
         
         // Load ROM instructions to RAM first, then run the Beta 
         case(motherboard.q){
@@ -122,6 +119,7 @@ module motherboard (
             
             MotherboardStates.DISPLAY_OUTPUT:
                 // display Mem[12] to beta_output_buffer for user to see
+                memory_unit.raddr = 32hC
                 system_output_buffer.d = memory_unit.mrd // Note: a little bit janky in simulation, will sometimes overwrite 
                 motherboard.d = MotherboardStates.UPDATE_INPUT
             
