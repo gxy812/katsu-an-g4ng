@@ -5,7 +5,7 @@ module max7219_serial #(
 (
     input clk,  // clock
     input rst,  // reset
-    input addr_in[8*CHAIN],
+    input addr_in[8],
     input din[8*CHAIN],
     input start,
     output cs,
@@ -27,10 +27,10 @@ module max7219_serial #(
         .rst(rst) { 
             counter slowclock(#SIZE(30));
             dff state[$width(States)](#INIT(States.IDLE));
-            dff address_write_pointer[$clog2(FULL_WIDTH)](#INIT(0));
+            dff address_write_pointer[$clog2(8)](#INIT(0));
             dff data_write_pointer[$clog2(FULL_WIDTH)](#INIT(-1));
             dff data[FULL_WIDTH](#INIT(0));
-            dff addr[FULL_WIDTH](#INIT(0));
+            dff addr[8](#INIT(0));
             dff load_state(#INIT(1)); 
             dff chain[$clog2(CHAIN)](#INIT(-1));
         }

@@ -26,9 +26,9 @@ module max7219_driver #(
     output debug_digit_index_original[8]
 ) {
 
-    sig max_addr[8*CHAIN]
+    sig max_addr[8]
     sig max_data[8*CHAIN]
-    sig current_digit_address[8*CHAIN]
+    sig current_digit_address[8]
     sig current_segment_values[8*CHAIN]
     
     enum States {
@@ -76,7 +76,7 @@ module max7219_driver #(
         
         digit_index.d = addr
         // reverse should not be used with non constant
-        current_digit_address = c{CHAINx{DIGIT_ADDRESS[digit_index.q[2:0]]}} //MAX 7219 starts from DIGIT reg address 1, not 0
+        current_digit_address = DIGIT_ADDRESS[digit_index.q[2:0]] //MAX 7219 starts from DIGIT reg address 1, not 0
         current_segment_values = segment_values
         
         debug_digit_index = current_digit_address 
@@ -95,7 +95,7 @@ module max7219_driver #(
             States.SEND_INITIAL_SHUTDOWN:
                 debug_driver_state = b0001 
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h0C)}}
+                max_addr = $reverse(h0C)
                 max_data = c{CHAINx{h00}}
                 
                 if(max.busy != 1) {
@@ -105,7 +105,7 @@ module max7219_driver #(
             States.SEND_INTENSITY:
                 debug_driver_state = b0001
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h0A)}}
+                max_addr = $reverse(h0A)
                 max_data = c{CHAINx{h00}}
                 
                 if(max.busy != 1) {
@@ -115,7 +115,7 @@ module max7219_driver #(
             States.SEND_SHUTDOWN:
                 debug_driver_state = b0001 
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h0C)}}
+                max_addr = $reverse(h0C)
                 max_data = c{CHAINx{h00}}
                 
                 if(max.busy != 1) {
@@ -125,7 +125,7 @@ module max7219_driver #(
             States.SEND_DISPLAY_TEST:
                 debug_driver_state = b0011
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h0F)}}
+                max_addr = $reverse(h0F)
                 max_data = c{CHAINx{h01}} // loop here to test
                 
                 if(max.busy != 1) {
@@ -135,7 +135,7 @@ module max7219_driver #(
             States.SEND_OFF_DISPLAY_TEST:
                 debug_driver_state = b0100
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h0F)}}
+                max_addr = $reverse(h0F)
                 max_data = c{CHAINx{h00}} // loop here to test
                 
                 if(max.busy != 1) { 
@@ -145,7 +145,7 @@ module max7219_driver #(
             States.SEND_NO_DECODE:
                 debug_driver_state = b0101
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h09)}}
+                max_addr = $reverse(h09)
                 max_data = c{CHAINx{h00}}
                 
                 if(max.busy != 1) { 
@@ -155,7 +155,7 @@ module max7219_driver #(
             States.SEND_SCAN_ALL_DIGITS:
                 debug_driver_state = b0110
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h0B)}}
+                max_addr = $reverse(h0B)
                 max_data = c{CHAINx{h07}} // scan line register shows every digit
                 
                 if(max.busy != 1) {
@@ -176,7 +176,7 @@ module max7219_driver #(
             States.SEND_TURN_ON:
                 debug_driver_state = b0010 // this will show when max7219 is finishing the previous state (SHUTDOWN) bit loading
                 max.start = 1
-                max_addr = c{CHAINx{$reverse(h0C)}}
+                max_addr = $reverse(h0C)
                 max_data = c{CHAINx{h01}}
                 
                 if(max.busy != 1) {
@@ -185,7 +185,7 @@ module max7219_driver #(
                 
             States.IDLE:
                 debug_driver_state = b1111
-                max_addr = c{CHAINx{8b0}}
+                max_addr = 0
                 max_data = c{CHAINx{8b0}}
                 done = 1
                 if (new_) {
