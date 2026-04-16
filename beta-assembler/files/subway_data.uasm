@@ -2,7 +2,7 @@
 irq_address:
 LONG(0)
 pos1:
-LONG(2)
+LONG(0)
 pos2:
 LONG(8)
 titlescreen:

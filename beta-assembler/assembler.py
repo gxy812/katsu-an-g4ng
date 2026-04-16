@@ -295,16 +295,16 @@ def arr_to_str(data, input_format, output_format):
     output_prefix = output_formatter[output_format][2]
     try:
         if input_format == "data":
-            return "\n".join(
+            return ",\n".join(
                 [
-                    f"{output_prefix}{''.join(data[i : min(i + (beta.memory_width // 8), len(data))][::-1])},"
+                    f"{output_prefix}{''.join(data[i : min(i + (beta.memory_width // 8), len(data))][::-1])}"
                     for i in range(0, len(data), (beta.memory_width // 8))
                 ][::-1]
             )
         else:
-            return "\n".join(
+            return ",\n".join(
                 [
-                    f"{output_prefix}{''.join(data[i : min(i + (beta.instruction_width // 8), len(data))][::-1])},"
+                    f"{output_prefix}{''.join(data[i : min(i + (beta.instruction_width // 8), len(data))][::-1])}"
                     for i in range(0, len(data), (beta.instruction_width // 8))
                 ][::-1]
             )
