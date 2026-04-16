@@ -24,7 +24,7 @@ module display_unit #(SPEED = 4 : SPEED > 0)(
                     }
                 )
             )
-            dff states[$width(States)](#INIT(States.IDLE))
+            dff states[$width(States)](#INIT(States.STORE))
             dff new_buf[8](#INIT(hFF)) // indicator of which rows need updating
             dff index[3](#INIT(0))
             
@@ -52,10 +52,6 @@ module display_unit #(SPEED = 4 : SPEED > 0)(
         sck = c{driver1.max7219_clock, driver0.max7219_clock}
         
         case (states.q) {
-            States.IDLE:
-                if (|new_buf.q) {
-                    states.d = States.STORE
-                }
             States.STORE:
                 driver0.addr = addr
                 driver0.segment_values = display_buf.q[index.q]
@@ -63,7 +59,7 @@ module display_unit #(SPEED = 4 : SPEED > 0)(
                 driver1.segment_values = display_buf.q[c{1, index.q}]
                 
                 driver0.new_ = new_buf.q[index.q]
-                driver1.new_ = new_buf.q[c{1, index.q}]
+                driver1.new_ = new_buf.q[index.q]
                 if (driver0.done && driver1.done) {
                     states.d = States.NEXT
                 }

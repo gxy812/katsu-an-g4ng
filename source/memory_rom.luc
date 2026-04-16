@@ -104,6 +104,7 @@ h00000000,
 h00000000,
 h00000000,
 h00000000
+
     }
     
     const NUM_OF_MEMORIES = $width(MEMORY,0) // compute how many instructions are there
